@@ -13,19 +13,11 @@ export function Logo({ className, markClassName }: LogoProps) {
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       <img
         src="/brand/logo.png"
-        alt=""
-        width={40}
-        height={40}
-        className={cn("h-9 w-9 shrink-0 object-contain", markClassName)}
+        alt={t.brand.name}
+        width={56}
+        height={56}
+        className={cn("h-12 w-12 shrink-0 object-contain sm:h-14 sm:w-14", markClassName)}
       />
-      <span className="flex flex-col leading-none">
-        <span className="font-display text-[1.3rem] font-semibold leading-none text-bone">
-          {t.brand.name}
-        </span>
-        <span className="mt-1 font-latin text-[8px] font-medium uppercase tracking-[0.3em] text-bone/50">
-          {t.brand.latin}
-        </span>
-      </span>
     </span>
   );
 }

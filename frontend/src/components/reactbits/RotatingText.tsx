@@ -30,7 +30,7 @@ export function RotatingText({ texts, interval = 2600, className }: RotatingText
   const active = texts[Math.min(index, texts.length - 1)] ?? "";
 
   if (reduceMotion) {
-    return <span className={className}>{active}</span>;
+    return <span className={cn(className, "bg-gradient-to-r from-sand via-[#0b7a74] to-sand bg-clip-text text-transparent")}>{active}</span>;
   }
 
   return (
@@ -49,7 +49,7 @@ export function RotatingText({ texts, interval = 2600, className }: RotatingText
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "-0.62em", opacity: 0 }}
             transition={{ type: "spring", stiffness: 320, damping: 30, mass: 0.7 }}
-            className="inline-block whitespace-nowrap"
+            className="inline-block whitespace-nowrap bg-gradient-to-r from-sand via-[#0b7a74] to-sand bg-clip-text text-transparent"
           >
             {active}
           </motion.span>
