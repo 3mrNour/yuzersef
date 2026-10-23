@@ -30,13 +30,13 @@ export function RotatingText({ texts, interval = 2600, className }: RotatingText
   const active = texts[Math.min(index, texts.length - 1)] ?? "";
 
   if (reduceMotion) {
-    return <span className={cn(className, "bg-gradient-to-r from-sand via-[#0b7a74] to-sand bg-clip-text text-transparent")}>{active}</span>;
+    return <span className={cn(className, "bg-gradient-to-l from-sand to-[#0b7a74] bg-clip-text text-transparent")}>{active}</span>;
   }
 
   return (
     <MotionConfig reducedMotion="user">
       <span
-        className={cn("relative inline-flex overflow-hidden align-bottom", className)}
+        className={cn("relative inline-flex overflow-visible align-baseline py-1", className)}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -45,11 +45,11 @@ export function RotatingText({ texts, interval = 2600, className }: RotatingText
           <motion.span
             key={active}
             aria-hidden="true"
-            initial={{ y: "0.62em", opacity: 0 }}
+            initial={{ y: "0.6em", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "-0.62em", opacity: 0 }}
+            exit={{ y: "-0.6em", opacity: 0 }}
             transition={{ type: "spring", stiffness: 320, damping: 30, mass: 0.7 }}
-            className="inline-block whitespace-nowrap bg-gradient-to-r from-sand via-[#0b7a74] to-sand bg-clip-text text-transparent"
+            className="inline-block whitespace-nowrap bg-gradient-to-l from-sand to-[#0b7a74] bg-clip-text text-transparent"
           >
             {active}
           </motion.span>
