@@ -323,9 +323,9 @@ export const contact = {
 export const copy: Record<Lang, SiteCopy> = {
   ar: {
     meta: {
-      title: "يوزرسيف | طباعة وتخصيص في أسوان",
-      description:
-        "يوزرسيف: طباعة وتخصيص ملابس، كابات، مجات، ستيكرز وجرابات موبايل في أسوان. خليك مختلف .. خليك يوزرسيف.",
+    title: "يوزرسيف",
+    description:
+      "يوزرسيف: طباعة وتخصيص ملابس، كابات، مجات، ستيكرز وجرابات موبايل. خليك مختلف .. خليك يوزرسيف.",
     },
     brand: {
       name: "يوزرسيف",
@@ -356,7 +356,7 @@ export const copy: Record<Lang, SiteCopy> = {
       home: "يوزرسيف، الرئيسية",
     },
     hero: {
-      eyebrow: "طباعة وتخصيص في أسوان",
+      eyebrow: "",
       titleLead: "خليك مختلف على",
       rotating: ["تيشيرتك", "كوبك", "كابك", "استيكرك"],
       subtitle: "من الفكرة للمنتج، نطبع ونخصّص قطعك في أسوان. اختار، ابعت تصميمك، والباقي علينا.",
@@ -536,8 +536,8 @@ export const copy: Record<Lang, SiteCopy> = {
         },
       ],
     },
-    footer: {
-      blurb: "طباعة وتخصيص في أسوان. خليك مختلف .. خليك يوزرسيف.",
+  footer: {
+    blurb: "خليك مختلف .. خليك يوزرسيف.",
       contactTitle: "تواصل",
       linksTitle: "الموقع",
       followTitle: "تابعنا",
