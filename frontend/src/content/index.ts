@@ -1,4 +1,4 @@
-﻿export type Lang = "ar" | "en";
+export type Lang = "ar" | "en";
 
 export type ServiceSlug = "clothing" | "mugs" | "caps" | "stickers" | "cases";
 
