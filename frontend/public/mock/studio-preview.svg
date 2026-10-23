@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1100" width="900" height="1100" role="img" aria-label="Mockup studio preview">
+  <defs>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.1" fill="#F3EEE3" opacity="0.12"/>
+    </pattern>
+    <clipPath id="previewClip"><path d="M286 230 Q352 206 404 168 Q450 232 496 168 Q548 206 614 230 L748 350 L664 448 L614 402 L614 866 Q450 902 286 866 L286 402 L236 448 L152 350 Z"/></clipPath>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#EAC08C" stop-opacity="0.18"/>
+      <stop offset="0.55" stop-color="#EAC08C" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="1100" fill="#033A34"/>
+  <rect width="900" height="1100" fill="url(#dots)"/>
+  <rect width="900" height="1100" fill="url(#glow)"/>
+  <ellipse cx="450" cy="906" rx="250" ry="34" fill="#022521" opacity="0.55"/>
+  <path d="M286 230 Q352 206 404 168 Q450 232 496 168 Q548 206 614 230 L748 350 L664 448 L614 402 L614 866 Q450 902 286 866 L286 402 L236 448 L152 350 Z" fill="#EAC08C" stroke="#C88F56" stroke-width="4"/>
+  <path d="M404 168 Q450 232 496 168" fill="none" stroke="#C88F56" stroke-width="18" stroke-linecap="round"/>
+  <g clip-path="url(#previewClip)">
+    <path d="M286 230 L152 350 L236 448 L286 402 Z" fill="#000" opacity="0.1"/>
+    <path d="M614 230 L748 350 L664 448 L614 402 Z" fill="#000" opacity="0.1"/>
+    <path d="M292 430 Q318 610 300 860" fill="none" stroke="#000" stroke-width="34" opacity="0.06"/>
+    <path d="M608 430 Q582 610 600 860" fill="none" stroke="#000" stroke-width="34" opacity="0.08"/>
+  </g>
+  <g transform="translate(450 505)" fill="none" stroke="#033A34" stroke-width="7">
+    <circle cx="-28" cy="0" r="34"/>
+    <circle cx="28" cy="0" r="34"/>
+    <circle cx="0" cy="0" r="8" fill="#033A34" stroke="none"/>
+  </g>
+  <text x="450" y="596" text-anchor="middle" fill="#033A34" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" letter-spacing="6">YUZERSEF</text>
+  <rect x="297" y="330" width="306" height="396" fill="none" stroke="#033A34" stroke-width="2" stroke-dasharray="12 10" opacity="0.35"/>
+</svg>

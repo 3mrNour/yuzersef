@@ -24,11 +24,12 @@ If the project path contains `&` and npm workspace scripts fail on Windows, run 
 node "..\node_modules\vite\bin\vite.js" --host 127.0.0.1 --port 5173
 ```
 
-## Build and typecheck
+## Build, typecheck, and tests
 
 ```bash
 npm run build --workspace frontend
 npm run typecheck --workspace frontend
+npm run test --workspace frontend
 ```
 
 Direct alternatives:
@@ -36,9 +37,10 @@ Direct alternatives:
 ```powershell
 node "..\node_modules\typescript\bin\tsc" --noEmit
 node "..\node_modules\vite\bin\vite.js" build
+node "..\node_modules\vitest\vitest.mjs" run
 ```
 
-The production build is written to `frontend/dist`.
+The production build is written to `frontend/dist`. Tests cover the studio geometry helpers only.
 
 ## Structure
 
@@ -48,11 +50,12 @@ src/
 │   ├── reactbits/       RotatingText, SpotlightCard
 │   └── ui/              ButtonLink, CtaArrow, DemoTag, LanguageToggle, Logo, Reveal, SectionHeading
 ├── content/index.ts     all Arabic and English copy and data
+├── features/studio/     mockup editor, canvas renderer, geometry, mock products
 ├── lib/                 API client, class helper, style helpers, validation
 ├── pages/               Home, Request, Track, Studio, Privacy, Terms, 404
 ├── providers/           LanguageProvider (lang, dir, copy, localStorage)
 ├── sections/            home page sections
-├── App.tsx              routes and shell
+├── App.tsx              routes, shell, design draft provider
 ├── index.css            Tailwind v4 tokens, base styles, animations
 └── main.tsx             font imports and providers
 ```
@@ -64,10 +67,12 @@ src/
 | `/` | Home |
 | `/request` | Request form |
 | `/track` | Order tracking |
-| `/studio` | Studio preview placeholder |
+| `/studio` | Interactive mockup studio |
 | `/privacy` | Privacy policy |
 | `/terms` | Terms |
 | `*` | NotFoundPage |
+
+`/dev/print-area` exists only in development for print-area calibration.
 
 Anchor links in the nav point to `/#services`, `/#work`, `/#process`, `/#contact`.
 
@@ -94,6 +99,22 @@ When you replace placeholder artwork, update `image` paths in the same file and 
 - Exposes `t`, `lang`, `dir`, `setLang`, `toggleLang`
 
 The mobile header shows the language toggle inside the opened menu. From `sm` upward it is visible in the header.
+
+## Studio
+
+The studio is code-split: the home teaser renders a lightweight preview, and `/studio` lazy-loads the canvas editor.
+
+- `src/features/studio/types.ts` defines the product, transform, and design contracts.
+- `mockProducts.ts` contains three demo products: tee, mug, and cap.
+- `studioApi.ts` validates the product data and adds a short fake loading delay.
+- `geometry.ts` owns print-area math, clamping, rotation bounds, and scale limits.
+- `imageCache.ts` loads, caches, tints, and processes logos and product images.
+- `renderMockup.ts` draws the product, logo, shading, and guides, and exports a 1200px PNG.
+- `MockupStudio.tsx` provides upload, drag, pinch, wheel, keyboard controls, colour/view switching, remove-white, white ink, reset, and download.
+- `PrintAreaEditor.tsx` is a self-contained editor used by the dev-only calibration page.
+- `DesignDraft.tsx` keeps the exported PNG and `DesignState` in memory for `/request`.
+
+The studio does not change the backend contract. The PNG and raw `DesignState` are not uploaded or persisted. The request page displays the attached design from the in-memory draft, and a reload clears it.
 
 ## Design system
 
@@ -143,16 +164,18 @@ Regenerate with `npm run assets` from the root. Replace them with real brand fil
 
 ## Verification performed
 
-- TypeScript passes.
-- Production build passes (one chunk-size warning, 538 kB minified, 163 kB gzip).
-- Browser checks at 360px and 1440px: no horizontal overflow, no clipped text, no undersized controls on the home page.
+- TypeScript passes in both frontend and backend.
+- Production build passes (one chunk-size warning, 560 kB minified, 170 kB gzip).
+- Vitest: 11 geometry tests pass.
+- Studio browser checks: product switcher, logo upload, canvas render, colour/view switching, PNG export, design handoff, service prefill, mobile layout, and the dev print-area route.
+- Production preview: `/studio` works, `/dev/print-area` falls through to the 404 page, and no console errors were recorded.
 - Request validation, request submission, tracking, contact submission, portfolio filters, FAQ, language toggle, and mobile menu were exercised manually.
-
-There are no automated frontend tests yet.
 
 ## Known limitations
 
-- The studio page is a labelled demo placeholder.
+- Studio products use generated SVG artwork, not real product photos.
+- The exported design is not uploaded or persisted. The request page preview is in memory and is lost on reload.
+- The editor uses Canvas 2D. The renderer interface leaves room for a future Three.js renderer.
 - Route-specific titles are not implemented. The title reflects the active language only.
 - The home page is long on mobile: about 14,000px at 360px wide, largely because the portfolio is single-column and the footer is tall.
 - No file uploads, payments, accounts, or admin screens.

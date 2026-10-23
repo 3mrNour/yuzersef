@@ -32,8 +32,38 @@ node scripts/generate-placeholders.mjs
 
 The script uses only Node.js built-ins. It writes UTF-8 SVG files and prints the number of generated files.
 
-## When to change it
+## `generate-mock-products.mjs`
 
-Edit this script only if the placeholder style or file names need to change. If file names change, update the image paths in `frontend/src/content/index.ts` as well.
+Creates the studio product artwork in `frontend/public/mock/`:
 
-These files are temporary. Replace them with real brand assets before launch, then either delete this script or keep it as a way to regenerate neutral demo visuals.
+- `tee-front.svg`
+- `tee-front-shading.svg`
+- `tee-back.svg`
+- `tee-back-shading.svg`
+- `mug-side.svg`
+- `mug-side-shading.svg`
+- `cap-front.svg`
+- `cap-front-shading.svg`
+- `studio-preview.svg`
+
+Run from the repository root:
+
+```bash
+npm run assets:studio
+```
+
+Or directly:
+
+```bash
+node scripts/generate-mock-products.mjs
+```
+
+The product definitions, colours, and normalized print areas live in `frontend/src/features/studio/mockProducts.ts`. Use the development-only `/dev/print-area` page to calibrate print areas after changing the artwork.
+
+## When to change these scripts
+
+Edit `generate-placeholders.mjs` only if the placeholder style or file names need to change. If its file names change, update the image paths in `frontend/src/content/index.ts` as well.
+
+Edit `generate-mock-products.mjs` only if the studio product artwork or file names need to change. If its file names change, update `frontend/src/features/studio/mockProducts.ts`.
+
+These files are temporary. Replace them with real brand and product assets before launch, then either delete the scripts or keep them as a way to regenerate neutral demo visuals.

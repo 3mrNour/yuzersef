@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1100" width="900" height="1100" role="img" aria-label="Blank t-shirt back mockup">
+  <defs></defs>
+  <g>
+    <path d="M286 230 Q352 204 405 180 Q450 196 495 180 Q550 204 614 230 L748 350 L664 448 L614 402 L614 866 Q450 902 286 866 L286 402 L236 448 L152 350 Z" fill="#D9D4C8" stroke="#AAA294" stroke-width="4"/>
+    <path d="M405 180 Q450 208 495 180" fill="none" stroke="#C4BDAF" stroke-width="18" stroke-linecap="round"/>
+    <path d="M405 180 Q450 208 495 180" fill="none" stroke="#AAA294" stroke-width="3" stroke-linecap="round" opacity="0.55"/>
+    <path d="M286 402 L286 866 M614 402 L614 866" fill="none" stroke="#C4BDAF" stroke-width="4" opacity="0.7"/>
+    <path d="M236 448 L286 402 M664 448 L614 402" fill="none" stroke="#C4BDAF" stroke-width="4" opacity="0.7"/>
+    <path d="M310 864 Q450 894 590 864" fill="none" stroke="#C4BDAF" stroke-width="3" opacity="0.55"/>
+    <path d="M286 296 Q450 330 614 296" fill="none" stroke="#C4BDAF" stroke-width="3" opacity="0.7"/>
+  </g>
+</svg>

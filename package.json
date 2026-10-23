@@ -15,7 +15,8 @@
     "start": "npm run start --workspace backend",
     "preview": "npm run preview --workspace frontend",
     "typecheck": "npm run typecheck --workspace frontend && npm run typecheck --workspace backend",
-    "assets": "node scripts/generate-placeholders.mjs"
+    "assets": "node scripts/generate-placeholders.mjs",
+    "assets:studio": "node scripts/generate-mock-products.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

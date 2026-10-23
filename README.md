@@ -2,7 +2,7 @@
 
 Arabic-first, RTL website for **Yuzersef**, a print and personalisation studio in Aswan. The site presents services, a filterable portfolio, a request flow, order tracking, and studio contact details.
 
-This is a competition build. Portfolio artwork and the logo mark are placeholders, and the interactive studio preview is intentionally marked as a demo.
+This is a competition build. Portfolio artwork and the logo mark are placeholders. The interactive studio is a client-side demo built on generated product artwork, and it is clearly labelled as a demo.
 
 ## Stack
 
@@ -17,12 +17,14 @@ This is a competition build. Portfolio artwork and the logo mark are placeholder
 ├── frontend/
 │   ├── public/
 │   │   ├── brand/logo-mark.svg          # placeholder mark
-│   │   └── portfolio/*.svg              # 10 placeholder product visuals
+│   │   ├── portfolio/*.svg              # 10 placeholder product visuals
+│   │   └── mock/*.svg                   # generated studio product artwork
 │   ├── src/
 │   │   ├── components/                  # layout, forms, gallery, header/footer
 │   │   │   ├── reactbits/               # RotatingText, SpotlightCard
 │   │   │   └── ui/                      # buttons, logo, reveal, demo tag
 │   │   ├── content/index.ts             # all Arabic and English copy
+│   │   ├── features/studio/             # mockup editor, canvas renderer, geometry
 │   │   ├── lib/                         # API client, validation, styles
 │   │   ├── pages/                       # home, request, track, studio, legal, 404
 │   │   ├── providers/                   # language and RTL/LTR handling
@@ -36,7 +38,9 @@ This is a competition build. Portfolio artwork and the logo mark are placeholder
 │       ├── index.ts                     # server entry
 │       ├── store.ts                     # JSON persistence
 │       └── types.ts
-└── scripts/generate-placeholders.mjs    # regenerates placeholder SVGs
+└── scripts/
+    ├── generate-placeholders.mjs        # placeholder logo and portfolio SVGs
+    └── generate-mock-products.mjs       # studio product artwork
 ```
 
 ## Getting started
@@ -89,7 +93,8 @@ npm run dev        # frontend and backend together
 npm run build      # typecheck and build both workspaces
 npm run typecheck  # typecheck both workspaces
 npm run preview    # preview the built frontend
-npm run assets     # regenerate placeholder SVGs
+npm run assets     # regenerate placeholder logo and portfolio SVGs
+npm run assets:studio # regenerate studio product artwork
 ```
 
 Workspace commands:
@@ -102,6 +107,8 @@ npm run typecheck --workspace frontend
 npm run dev --workspace backend
 npm run build --workspace backend
 npm run start --workspace backend
+
+npm run test --workspace frontend
 ```
 
 ### Windows path note
@@ -113,6 +120,7 @@ If the project folder path contains `&` (for example `C:\Projects\Brand & Build`
 node "..\node_modules\typescript\bin\tsc" --noEmit
 node "..\node_modules\vite\bin\vite.js" build
 node "..\node_modules\vite\bin\vite.js" --host 127.0.0.1 --port 5173
+node "..\node_modules\vitest\vitest.mjs" run
 
 # from backend/
 node "..\node_modules\typescript\bin\tsc" --noEmit
@@ -126,10 +134,12 @@ node ..\node_modules\tsx\dist\cli.mjs src\index.ts
 | `/` | Home: hero, services, studio teaser, process, portfolio, about, FAQ, contact |
 | `/request` | Request form, optional `?service=clothing` prefill |
 | `/track` | Order tracking, optional `?code=YZ-DEMO-0001` lookup |
-| `/studio` | Mockup studio preview placeholder |
+| `/studio` | Interactive mockup studio with PNG export and request handoff |
 | `/privacy` | Privacy policy |
 | `/terms` | Terms of use |
 | `*` | Arabic 404 page |
+
+`/dev/print-area` is a development-only print-area calibration page. It is not registered in production builds.
 
 ## API
 
@@ -175,18 +185,28 @@ To regenerate the placeholder logo and portfolio SVGs:
 npm run assets
 ```
 
+To regenerate the studio product artwork:
+
+```bash
+npm run assets:studio
+```
+
 Replace these files with the real brand assets when available:
 
 - `frontend/public/brand/logo-mark.svg`
 - `frontend/public/portfolio/*.svg`
+- `frontend/public/mock/*.svg`
 
-Then update image paths, alt text, and portfolio titles in `frontend/src/content/index.ts`.
+Then update image paths, alt text, product data, and portfolio titles.
+
+The studio product data lives in `frontend/src/features/studio/mockProducts.ts`. Print areas are normalized `{ x, y, w, h }` values. Use the development-only `/dev/print-area` page to calibrate them against the artwork.
 
 ## Placeholders and limitations
 
 - The logo mark and all portfolio images are generated placeholders.
 - The social links for TikTok and Facebook are search URLs, not confirmed profile URLs.
-- The studio page is a labelled demo placeholder. No interactive mockup editor is implemented.
+- The studio uses generated SVG product artwork, not photographed products. The preview, colours, and print areas are demo data.
+- The studio exports a 1200px PNG and keeps the `DesignState` in memory for the request page. The PNG and design JSON are not uploaded to the backend, so the shop does not receive them after a reload.
 - There is no pricing, online payment, account system, or file upload. Customers submit details and an optional artwork link.
 - Requests and contact messages are stored in a JSON file on the server. Use a database and durable storage for real traffic.
 - Rate limiting is per-process and resets when the API restarts.

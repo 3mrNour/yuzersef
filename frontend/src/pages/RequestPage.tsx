@@ -4,14 +4,19 @@ import {
   CircleNotch,
   Info,
   PaperPlaneTilt,
+  PencilSimple,
+  Trash,
   WhatsappLogo,
 } from "@phosphor-icons/react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { PageHeader } from "../components/PageHeader";
 import { ButtonLink } from "../components/ui/ButtonLink";
 import { CtaArrow } from "../components/ui/CtaArrow";
+import { DemoTag } from "../components/ui/DemoTag";
 import { contact, serviceLabels, type ServiceSlug } from "../content";
+import { useDesignDraft } from "../features/studio/DesignDraft";
+import { mockProducts } from "../features/studio/mockProducts";
 import { createRequest } from "../lib/api";
 import { cn } from "../lib/cn";
 import { buttonClass } from "../lib/styles";
@@ -31,8 +36,15 @@ function readServiceParam(value: string | null): ServiceSlug | "" {
 
 export function RequestPage() {
   const { t, lang } = useLanguage();
+  const navigate = useNavigate();
   const [params] = useSearchParams();
+  const { draft, clearDraft } = useDesignDraft();
   const initialService = readServiceParam(params.get("service"));
+  const draftProduct = draft
+    ? mockProducts.find((product) => product._id === draft.state.productId) ?? null
+    : null;
+  const draftColor = draftProduct?.colors.find((color) => color.id === draft?.state.colorId);
+  const draftView = draftProduct?.views.find((view) => view.id === draft?.state.viewId);
 
   const [values, setValues] = useState({
     name: "",
@@ -110,6 +122,7 @@ export function RequestPage() {
     setErrors({});
     setCode("");
     setStatus("idle");
+    clearDraft();
   }
 
   const busy = status === "submitting";
@@ -121,6 +134,71 @@ export function RequestPage() {
       <div className="shell py-12 md:py-16">
         <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14">
           <div>
+            {draft ? (
+              <section
+                aria-labelledby="attached-design-title"
+                className="mb-6 rounded-[var(--radius-card)] border border-sand/25 bg-forest-900/55 p-4 sm:p-5"
+              >
+                <div className="grid gap-4 sm:grid-cols-[152px_minmax(0,1fr)] sm:items-start">
+                  <img
+                    src={draft.state.previewUrl}
+                    alt={t.studioUi.previewAlt}
+                    width={1200}
+                    height={1466}
+                    className="max-h-[240px] w-full rounded-[var(--radius-field)] border border-bone/10 bg-forest-950 object-contain"
+                  />
+
+                  <div className="min-w-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h2
+                          id="attached-design-title"
+                          className="text-sm font-semibold tracking-[0.04em] text-sand"
+                        >
+                          {t.studioUi.attachedDesign}
+                        </h2>
+                        <p className="mt-1 truncate text-base text-bone">
+                          {draftProduct?.name ?? draft.state.productId}
+                        </p>
+                        <p className="mt-1 text-xs leading-relaxed text-bone/50">
+                          {[draftColor?.name, draftView?.label].filter(Boolean).join(" / ") ||
+                            `${draft.state.colorId} / ${draft.state.viewId}`}
+                        </p>
+                        {draft.state.logoFileName ? (
+                          <p
+                            dir="auto"
+                            className="mt-1 truncate font-latin text-[11px] text-bone/35"
+                          >
+                            {draft.state.logoFileName}
+                          </p>
+                        ) : null}
+                      </div>
+                      <DemoTag className="shrink-0 text-bone/45" />
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => navigate("/studio")}
+                        className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-bone/20 px-3 text-xs text-bone/65 transition-colors hover:border-bone/40 hover:text-bone"
+                      >
+                        <PencilSimple aria-hidden="true" size={14} />
+                        {t.studioUi.changeDesign}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={clearDraft}
+                        className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-3 text-xs text-bone/50 transition-colors hover:text-danger"
+                      >
+                        <Trash aria-hidden="true" size={14} />
+                        {t.studioUi.removeDesign}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            ) : null}
+
             {status === "success" ? (
               <div
                 ref={successRef}

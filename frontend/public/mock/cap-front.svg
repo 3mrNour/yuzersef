@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1100" width="900" height="1100" role="img" aria-label="Blank cap front mockup">
+  <defs></defs>
+  <g>
+      <path d="M230 592 Q232 310 450 306 Q668 310 670 592 Z" fill="#D9D4C8" stroke="#AAA294" stroke-width="4"/>
+      <path d="M214 590 Q450 642 706 556 Q724 620 630 648 Q450 696 232 632 Q196 616 214 590 Z" fill="#D9D4C8" stroke="#AAA294" stroke-width="4"/>
+      <path d="M450 308 V590" fill="none" stroke="#C4BDAF" stroke-width="3" opacity="0.7"/>
+      <path d="M360 320 Q342 452 338 584" fill="none" stroke="#C4BDAF" stroke-width="3" opacity="0.55"/>
+      <path d="M540 320 Q558 452 562 584" fill="none" stroke="#C4BDAF" stroke-width="3" opacity="0.55"/>
+      <path d="M228 588 Q450 632 678 574" fill="none" stroke="#C4BDAF" stroke-width="3" opacity="0.5"/>
+      <circle cx="450" cy="312" r="12" fill="#C4BDAF"/>
+    </g>
+</svg>

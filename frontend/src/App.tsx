@@ -1,5 +1,7 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout";
+import { DesignDraftProvider } from "./features/studio/DesignDraft";
 import { Home } from "./pages/Home";
 import { RequestPage } from "./pages/RequestPage";
 import { TrackPage } from "./pages/TrackPage";
@@ -8,20 +10,37 @@ import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
+const DevPrintAreaPage = lazy(async () => {
+  const module = await import("./pages/DevPrintAreaPage");
+  return { default: module.DevPrintAreaPage };
+});
+
 export function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="request" element={<RequestPage />} />
-          <Route path="track" element={<TrackPage />} />
-          <Route path="studio" element={<StudioPage />} />
-          <Route path="privacy" element={<PrivacyPage />} />
-          <Route path="terms" element={<TermsPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Routes>
+      <DesignDraftProvider>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="request" element={<RequestPage />} />
+            <Route path="track" element={<TrackPage />} />
+            <Route path="studio" element={<StudioPage />} />
+            <Route path="privacy" element={<PrivacyPage />} />
+            <Route path="terms" element={<TermsPage />} />
+            {import.meta.env.DEV ? (
+              <Route
+                path="dev/print-area"
+                element={
+                  <Suspense fallback={null}>
+                    <DevPrintAreaPage />
+                  </Suspense>
+                }
+              />
+            ) : null}
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Routes>
+      </DesignDraftProvider>
     </BrowserRouter>
   );
 }

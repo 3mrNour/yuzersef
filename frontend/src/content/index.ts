@@ -209,6 +209,48 @@ export interface SiteCopy {
     placeholderNote: string;
     cta: string;
     worksCta: string;
+    note: string;
+    demo: string;
+  };
+  studioUi: {
+    productLabel: string;
+    colorLabel: string;
+    viewLabel: string;
+    logoLabel: string;
+    upload: string;
+    replace: string;
+    remove: string;
+    uploadHint: string;
+    uploadTypeError: string;
+    uploadSizeError: string;
+    uploadReadError: string;
+    noLogo: string;
+    dragHint: string;
+    previewAlt: string;
+    loading: string;
+    loadError: string;
+    retry: string;
+    controls: string;
+    scale: string;
+    rotation: string;
+    reset: string;
+    treatment: string;
+    removeWhite: string;
+    removeWhiteHint: string;
+    removalStrength: string;
+    inkMode: string;
+    inkOriginal: string;
+    inkWhite: string;
+    whiteHint: string;
+    download: string;
+    exporting: string;
+    exportError: string;
+    useDesign: string;
+    designNote: string;
+    attachedDesign: string;
+    changeDesign: string;
+    removeDesign: string;
+    demoNote: string;
   };
   legal: {
     privacy: {
@@ -384,10 +426,10 @@ export const copy: Record<Lang, SiteCopy> = {
     },
     studio: {
       title: "شوف تصميمك على المنتج قبل ما تطلب",
-      body: "المعاينة التفاعلية لسه قيد التجهيز. دلوقتي، ابعت تصميمك وصاحب المحل يساعدك تشوفه على المنتج.",
+      body: "ارفع لوجو، شوفه على المنتج، وعدّل الحجم والدوران قبل ما تطلب.",
       cta: "افتح الاستوديو",
-      frameLabel: "معاينة تجريبية",
-      placeholderNote: "المعاينة التفاعلية هتتحط هنا.",
+      frameLabel: "معاينة الاستوديو",
+      placeholderNote: "دي معاينة سريعة. افتح الاستوديو وجرّب تصميمك.",
     },
     process: {
       title: "من الفكرة للاستلام",
@@ -565,10 +607,52 @@ export const copy: Record<Lang, SiteCopy> = {
     },
     studioPage: {
       title: "استوديو المعاينة",
-      intro: "هنا هتشوف تصميمك على المنتج قبل ما تطلب. المساحة دي محجوزة للمعاينة التفاعلية.",
-      placeholderNote: "المعاينة التفاعلية لسه مش متاحة في النسخة دي.",
+      intro: "ارفع لوجو، جرّبه على تيشيرت أو مج أو كاب، وبعدها كمّل طلبك.",
+      placeholderNote: "المعاينة تجريبية. الألوان والتنفيذ النهائي يتأكدوا مع صاحب المحل.",
       cta: "ابدأ طلبك",
       worksCta: "شوف أعمالنا",
+      note: "المعاينة تجريبية. السعر والموعد النهائي يتأكدوا مع صاحب المحل.",
+      demo: "المعاينة والتصميم المعروضين نماذج تجريبية.",
+    },
+    studioUi: {
+      productLabel: "المنتج",
+      colorLabel: "اللون",
+      viewLabel: "المعاينة",
+      logoLabel: "اللوجو",
+      upload: "ارفع لوجو",
+      replace: "غيّر اللوجو",
+      remove: "شيل اللوجو",
+      uploadHint: "PNG أو JPG أو SVG، أقصى حجم 5 ميجا.",
+      uploadTypeError: "الملف لازم يكون صورة PNG أو JPG أو SVG.",
+      uploadSizeError: "أقصى حجم للملف 5 ميجا.",
+      uploadReadError: "مش قادرين نقرأ الصورة دي. جرب ملف تاني.",
+      noLogo: "ارفع لوجو وهتشوفه على المنتج",
+      dragHint: "اسحب اللوجو للتحريك. عجلة الماوس أو إصبعين للتكبير. الأسهم للتحريك، و+/- للحجم.",
+      previewAlt: "معاينة التصميم على المنتج",
+      loading: "بنجهز المعاينة...",
+      loadError: "مش قادرين نحمّل المنتج دلوقتي.",
+      retry: "جرب تاني",
+      controls: "التحكم في التصميم",
+      scale: "حجم اللوجو",
+      rotation: "الدوران",
+      reset: "رجّع التصميم",
+      treatment: "معالجة اللوجو",
+      removeWhite: "شيل الخلفية البيضا",
+      removeWhiteHint: "بيشيل الأبيض اللي حوالين اللوجو.",
+      removalStrength: "قوة الإزالة",
+      inkMode: "لون الطباعة",
+      inkOriginal: "الأصلي",
+      inkWhite: "أبيض",
+      whiteHint: "أبيض بيبان أكتر على المنتجات الغامقة.",
+      download: "نزّل المعاينة",
+      exporting: "بنصدّر...",
+      exportError: "مش قادرين نصدّر المعاينة. جرب تاني.",
+      useDesign: "ابدأ طلب بالتصميم ده",
+      designNote: "التصميم هيفضل معاك في صفحة الطلب. السعر والموعد يتأكدوا مع صاحب المحل.",
+      attachedDesign: "التصميم المرفق",
+      changeDesign: "جرّب تصميم تاني",
+      removeDesign: "شيل التصميم",
+      demoNote: "المعاينة تجريبية، والألوان ممكن تختلف بسيط عن الطباعة.",
     },
     legal: {
       privacy: {
@@ -701,10 +785,10 @@ export const copy: Record<Lang, SiteCopy> = {
     },
     studio: {
       title: "See your design on the product before you order",
-      body: "The interactive preview is still being prepared. For now, send your design and the shop owner will help you see it on the product.",
+      body: "Upload a logo, see it on the product, and adjust the size and rotation before you order.",
       cta: "Open the studio",
-      frameLabel: "Demo preview",
-      placeholderNote: "The interactive preview will go here.",
+      frameLabel: "Studio preview",
+      placeholderNote: "A quick preview. Open the studio to try your design.",
     },
     process: {
       title: "From idea to pickup",
@@ -882,10 +966,52 @@ export const copy: Record<Lang, SiteCopy> = {
     },
     studioPage: {
       title: "Preview studio",
-      intro: "This is where you will see your design on the product before ordering. The space is reserved for the interactive preview.",
-      placeholderNote: "The interactive preview is not available in this version yet.",
+      intro: "Upload a logo, try it on a tee, mug or cap, then carry it into your request.",
+      placeholderNote: "This is a demo preview. Colours and final production are confirmed with the shop owner.",
       cta: "Start a request",
       worksCta: "See our work",
+      note: "This is a demo preview. Price and final date are confirmed with the shop owner.",
+      demo: "The preview and design shown are demo samples.",
+    },
+    studioUi: {
+      productLabel: "Product",
+      colorLabel: "Colour",
+      viewLabel: "View",
+      logoLabel: "Logo",
+      upload: "Upload logo",
+      replace: "Replace logo",
+      remove: "Remove logo",
+      uploadHint: "PNG, JPG or SVG, up to 5MB.",
+      uploadTypeError: "The file must be a PNG, JPG or SVG image.",
+      uploadSizeError: "The file must be 5MB or smaller.",
+      uploadReadError: "We could not read that image. Try another file.",
+      noLogo: "Upload a logo to see it on the product",
+      dragHint: "Drag the logo to move it. Use the wheel or two fingers to scale. Arrow keys move, +/- resizes.",
+      previewAlt: "Design preview on the product",
+      loading: "Preparing the preview...",
+      loadError: "We could not load the product right now.",
+      retry: "Try again",
+      controls: "Design controls",
+      scale: "Logo size",
+      rotation: "Rotation",
+      reset: "Reset design",
+      treatment: "Logo treatment",
+      removeWhite: "Remove white background",
+      removeWhiteHint: "Removes the white around the logo.",
+      removalStrength: "Removal strength",
+      inkMode: "Ink colour",
+      inkOriginal: "Original",
+      inkWhite: "White",
+      whiteHint: "White shows up best on dark products.",
+      download: "Download mockup",
+      exporting: "Exporting...",
+      exportError: "We could not export the mockup. Try again.",
+      useDesign: "Start a request with this design",
+      designNote: "Your design stays with you on the request page. Price and date are confirmed with the shop owner.",
+      attachedDesign: "Attached design",
+      changeDesign: "Try another design",
+      removeDesign: "Remove design",
+      demoNote: "This is a demo preview. Colours may vary slightly in print.",
     },
     legal: {
       privacy: {

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1100" width="900" height="1100" role="img" aria-label="Cap shading overlay">
+  <defs><clipPath id="capClip"><path d="M230 592 Q232 310 450 306 Q668 310 670 592 Z"/><path d="M214 590 Q450 642 706 556 Q724 620 630 648 Q450 696 232 632 Q196 616 214 590 Z"/></clipPath></defs>
+  <g clip-path="url(#capClip)">
+      <path d="M236 560 Q256 356 450 314 Q644 356 664 560 Z" fill="#fff" opacity="0.16"/>
+      <path d="M230 592 Q240 350 450 310" fill="none" stroke="#000" stroke-width="46" opacity="0.09"/>
+      <path d="M670 592 Q660 350 450 310" fill="none" stroke="#000" stroke-width="54" opacity="0.15"/>
+      <path d="M230 590 Q450 642 706 556" fill="none" stroke="#000" stroke-width="22" opacity="0.13"/>
+      <path d="M260 626 Q450 674 640 618" fill="none" stroke="#fff" stroke-width="12" opacity="0.13"/>
+    </g>
+</svg>

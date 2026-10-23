@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1100" width="900" height="1100" role="img" aria-label="Mug shading overlay">
+  <defs><clipPath id="mugClip"><path d="M252 330 H598 V800 A40 40 0 0 1 558 840 H292 A40 40 0 0 1 252 800 Z"/><path d="M596 430 H636 A86 86 0 0 1 636 602 H596" fill="none" stroke="#000" stroke-width="44" stroke-linecap="round"/></clipPath></defs>
+  <g clip-path="url(#mugClip)">
+      <rect x="252" y="330" width="64" height="510" fill="#fff" opacity="0.18"/>
+      <rect x="520" y="330" width="80" height="510" fill="#000" opacity="0.15"/>
+      <path d="M270 430 Q292 620 278 810" fill="none" stroke="#000" stroke-width="30" opacity="0.1"/>
+      <path d="M590 610 Q626 590 610 500" fill="none" stroke="#000" stroke-width="26" opacity="0.13"/>
+      <path d="M286 820 Q425 840 564 820" fill="none" stroke="#000" stroke-width="18" opacity="0.12"/>
+      <ellipse cx="425" cy="330" rx="144" ry="12" fill="#000" opacity="0.18"/>
+    </g>
+</svg>
