@@ -19,8 +19,8 @@ export function Footer() {
 
   const socials = [
     { label: contact.instagramHandle, href: contact.instagramHref, Icon: InstagramLogo },
-    { label: "يوزرسيف", href: contact.tiktokHref, Icon: TiktokLogo },
-    { label: "يوزرسيف", href: contact.facebookHref, Icon: FacebookLogo },
+    ...(contact.facebookHref ? [{ label: "يوزرسيف", href: contact.facebookHref, Icon: FacebookLogo }] : []),
+    ...(contact.tiktokHref ? [{ label: "يوزرسيف", href: contact.tiktokHref, Icon: TiktokLogo }] : []),
   ];
 
   return (

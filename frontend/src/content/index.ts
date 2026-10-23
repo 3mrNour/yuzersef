@@ -316,10 +316,8 @@ export const contact = {
   whatsappHref: "https://wa.me/201116891025",
   instagramHandle: "@yuzersef___",
   instagramHref: "https://instagram.com/yuzersef___",
-  tiktokHref:
-    "https://www.tiktok.com/search?q=%D9%8A%D9%88%D8%B2%D8%B1%D8%B3%D9%8A%D9%81",
-  facebookHref:
-    "https://www.facebook.com/search/top?q=%D9%8A%D9%88%D8%B2%D8%B1%D8%B3%D9%8A%D9%81",
+  tiktokHref: "",
+  facebookHref: "https://www.facebook.com/USERSIEFASWAN",
 } as const;
 
 export const copy: Record<Lang, SiteCopy> = {
