@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000" role="img">
+  <defs>
+    <pattern id="bgdots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.1" fill="#E4DCCB" opacity="0.16"/>
+    </pattern>
+    <clipPath id="artclip"><rect x="0" y="0" width="800" height="1000"/></clipPath>
+  </defs>
+  <rect width="800" height="1000" fill="#04594F"/>
+  <rect width="800" height="1000" fill="url(#bgdots)"/>
+  <g clip-path="url(#artclip)">
+    
+      <path d="M196 566 Q400 614 624 548 Q640 606 562 626 Q380 662 206 608 Q180 592 196 566 Z" fill="#EAC08C" transform="translate(9 11)"/>
+      <path d="M206 566 Q212 316 400 316 Q588 316 594 566 Z" fill="#EAC08C" transform="translate(9 11)"/>
+      <path d="M196 566 Q400 614 624 548 Q640 606 562 626 Q380 662 206 608 Q180 592 196 566 Z" fill="#F3EEE3"/>
+      <path d="M206 566 Q212 316 400 316 Q588 316 594 566 Z" fill="#F3EEE3"/>
+      <path d="M400 322 V566" stroke="#04594F" stroke-width="3" opacity="0.18"/>
+      <path d="M212 560 Q400 604 588 560" stroke="#04594F" stroke-width="4" fill="none" opacity="0.28"/>
+      <circle cx="364.0" cy="403.0" r="2.57" fill="#04594F"/><circle cx="377.0" cy="403.0" r="2.79" fill="#04594F"/><circle cx="390.0" cy="403.0" r="2.93" fill="#04594F"/><circle cx="403.0" cy="403.0" r="2.96" fill="#04594F"/><circle cx="416.0" cy="403.0" r="2.88" fill="#04594F"/><circle cx="429.0" cy="403.0" r="2.70" fill="#04594F"/><circle cx="351.0" cy="416.0" r="2.57" fill="#04594F"/><circle cx="364.0" cy="416.0" r="2.90" fill="#04594F"/><circle cx="377.0" cy="416.0" r="3.17" fill="#04594F"/><circle cx="390.0" cy="416.0" r="3.35" fill="#04594F"/><circle cx="403.0" cy="416.0" r="3.39" fill="#04594F"/><circle cx="416.0" cy="416.0" r="3.28" fill="#04594F"/><circle cx="429.0" cy="416.0" r="3.06" fill="#04594F"/><circle cx="442.0" cy="416.0" r="2.75" fill="#04594F"/><circle cx="351.0" cy="429.0" r="2.79" fill="#04594F"/><circle cx="364.0" cy="429.0" r="3.17" fill="#04594F"/><circle cx="377.0" cy="429.0" r="3.51" fill="#04594F"/><circle cx="390.0" cy="429.0" r="3.76" fill="#04594F"/><circle cx="403.0" cy="429.0" r="3.83" fill="#04594F"/><circle cx="416.0" cy="429.0" r="3.66" fill="#04594F"/><circle cx="429.0" cy="429.0" r="3.36" fill="#04594F"/><circle cx="442.0" cy="429.0" r="3.00" fill="#04594F"/><circle cx="455.0" cy="429.0" r="2.61" fill="#04594F"/><circle cx="351.0" cy="442.0" r="2.93" fill="#04594F"/><circle cx="364.0" cy="442.0" r="3.35" fill="#04594F"/><circle cx="377.0" cy="442.0" r="3.76" fill="#04594F"/><circle cx="390.0" cy="442.0" r="4.13" fill="#04594F"/><circle cx="403.0" cy="442.0" r="4.25" fill="#04594F"/><circle cx="416.0" cy="442.0" r="3.97" fill="#04594F"/><circle cx="429.0" cy="442.0" r="3.58" fill="#04594F"/><circle cx="442.0" cy="442.0" r="3.16" fill="#04594F"/><circle cx="455.0" cy="442.0" r="2.73" fill="#04594F"/><circle cx="351.0" cy="455.0" r="2.96" fill="#04594F"/><circle cx="364.0" cy="455.0" r="3.39" fill="#04594F"/><circle cx="377.0" cy="455.0" r="3.83" fill="#04594F"/><circle cx="390.0" cy="455.0" r="4.25" fill="#04594F"/><circle cx="403.0" cy="455.0" r="4.46" fill="#04594F"/><circle cx="416.0" cy="455.0" r="4.06" fill="#04594F"/><circle cx="429.0" cy="455.0" r="3.63" fill="#04594F"/><circle cx="442.0" cy="455.0" r="3.19" fill="#04594F"/><circle cx="455.0" cy="455.0" r="2.76" fill="#04594F"/><circle cx="351.0" cy="468.0" r="2.88" fill="#04594F"/><circle cx="364.0" cy="468.0" r="3.28" fill="#04594F"/><circle cx="377.0" cy="468.0" r="3.66" fill="#04594F"/><circle cx="390.0" cy="468.0" r="3.97" fill="#04594F"/><circle cx="403.0" cy="468.0" r="4.06" fill="#04594F"/><circle cx="416.0" cy="468.0" r="3.84" fill="#04594F"/><circle cx="429.0" cy="468.0" r="3.49" fill="#04594F"/><circle cx="442.0" cy="468.0" r="3.10" fill="#04594F"/><circle cx="455.0" cy="468.0" r="2.69" fill="#04594F"/><circle cx="351.0" cy="481.0" r="2.70" fill="#04594F"/><circle cx="364.0" cy="481.0" r="3.06" fill="#04594F"/><circle cx="377.0" cy="481.0" r="3.36" fill="#04594F"/><circle cx="390.0" cy="481.0" r="3.58" fill="#04594F"/><circle cx="403.0" cy="481.0" r="3.63" fill="#04594F"/><circle cx="416.0" cy="481.0" r="3.49" fill="#04594F"/><circle cx="429.0" cy="481.0" r="3.23" fill="#04594F"/><circle cx="442.0" cy="481.0" r="2.90" fill="#04594F"/><circle cx="364.0" cy="494.0" r="2.75" fill="#04594F"/><circle cx="377.0" cy="494.0" r="3.00" fill="#04594F"/><circle cx="390.0" cy="494.0" r="3.16" fill="#04594F"/><circle cx="403.0" cy="494.0" r="3.19" fill="#04594F"/><circle cx="416.0" cy="494.0" r="3.10" fill="#04594F"/><circle cx="429.0" cy="494.0" r="2.90" fill="#04594F"/><circle cx="442.0" cy="494.0" r="2.62" fill="#04594F"/><circle cx="377.0" cy="507.0" r="2.61" fill="#04594F"/><circle cx="390.0" cy="507.0" r="2.73" fill="#04594F"/><circle cx="403.0" cy="507.0" r="2.76" fill="#04594F"/><circle cx="416.0" cy="507.0" r="2.69" fill="#04594F"/>
+  </g>
+  <g stroke="#E4DCCB" stroke-width="1.4" opacity="0.55" fill="none">
+    <path d="M42 64 V42 H64"/>
+    <path d="M758 64 V42 H736"/>
+    <path d="M42 936 V958 H64"/>
+    <path d="M758 936 V958 H736"/>
+  </g>
+  <g fill="#E4DCCB" font-family="Arial, Helvetica, sans-serif" font-size="13" letter-spacing="3" opacity="0.72">
+    <text x="64" y="930">YUZERSEF</text>
+    <text x="736" y="930" text-anchor="end">DEMO 05</text>
+  </g>
+  <text x="400" y="972" text-anchor="middle" fill="#E4DCCB" font-family="Arial, Helvetica, sans-serif" font-size="12" letter-spacing="4" opacity="0.5">CAP</text>
+</svg>

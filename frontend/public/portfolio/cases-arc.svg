@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000" role="img">
+  <defs>
+    <pattern id="bgdots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.1" fill="#E4DCCB" opacity="0.16"/>
+    </pattern>
+    <clipPath id="artclip"><rect x="0" y="0" width="800" height="1000"/></clipPath>
+  </defs>
+  <rect width="800" height="1000" fill="#033A34"/>
+  <rect width="800" height="1000" fill="url(#bgdots)"/>
+  <g clip-path="url(#artclip)">
+    
+      <rect x="218" y="208" width="364" height="608" rx="44" fill="#F3EEE3" transform="translate(9 11)"/>
+      <rect x="218" y="208" width="364" height="608" rx="44" fill="#EAC08C"/>
+      <rect x="294" y="264" width="128" height="132" rx="28" fill="#033A34"/>
+      <circle cx="330" cy="300" r="15" fill="#EAC08C"/>
+      <circle cx="330" cy="348" r="15" fill="#EAC08C"/>
+      <path d="M280 566 A120 120 0 0 1 520 566" fill="none" stroke="#033A34" stroke-width="12" stroke-linecap="round"/><path d="M294.88 566 A105.12 105.12 0 0 1 505.12 566" fill="none" stroke="#033A34" stroke-width="12" stroke-linecap="round"/><path d="M309.76 566 A90.24000000000001 90.24000000000001 0 0 1 490.24 566" fill="none" stroke="#033A34" stroke-width="12" stroke-linecap="round"/><path d="M324.64 566 A75.36 75.36 0 0 1 475.36 566" fill="none" stroke="#033A34" stroke-width="12" stroke-linecap="round"/><path d="M339.52 566 A60.480000000000004 60.480000000000004 0 0 1 460.48 566" fill="none" stroke="#033A34" stroke-width="12" stroke-linecap="round"/>
+  </g>
+  <g stroke="#E4DCCB" stroke-width="1.4" opacity="0.55" fill="none">
+    <path d="M42 64 V42 H64"/>
+    <path d="M758 64 V42 H736"/>
+    <path d="M42 936 V958 H64"/>
+    <path d="M758 936 V958 H736"/>
+  </g>
+  <g fill="#E4DCCB" font-family="Arial, Helvetica, sans-serif" font-size="13" letter-spacing="3" opacity="0.72">
+    <text x="64" y="930">YUZERSEF</text>
+    <text x="736" y="930" text-anchor="end">DEMO 10</text>
+  </g>
+  <text x="400" y="972" text-anchor="middle" fill="#E4DCCB" font-family="Arial, Helvetica, sans-serif" font-size="12" letter-spacing="4" opacity="0.5">PHONE CASE</text>
+</svg>
