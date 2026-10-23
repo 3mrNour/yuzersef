@@ -1,9 +1,41 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: "FRSSPBL";
-  src: url("/fonts/FRSSPBL.TTF") format("truetype");
-  font-weight: 600 700;
+  font-family: "Thmanyah";
+  src: url("/fonts/thmanyahsans-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Thmanyah";
+  src: url("/fonts/thmanyahsans-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Thmanyah";
+  src: url("/fonts/thmanyahsans-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Thmanyah";
+  src: url("/fonts/thmanyahsans-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Thmanyah";
+  src: url("/fonts/thmanyahsans-Black.otf") format("opentype");
+  font-weight: 900;
   font-style: normal;
   font-display: swap;
 }
@@ -22,9 +54,9 @@
   --color-clay: #065f5b;
   --color-danger: #ffcbb8;
 
-  --font-display: "FRSSPBL", "Reem Kufi", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "IBM Plex Sans Arabic", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-latin: "Space Grotesk", "IBM Plex Sans Arabic", ui-sans-serif, sans-serif;
+  --font-display: "Thmanyah", "IBM Plex Sans Arabic", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Thmanyah", "IBM Plex Sans Arabic", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-latin: "Thmanyah", "Space Grotesk", ui-sans-serif, sans-serif;
 
   --radius-card: 1.75rem;
   --radius-field: 0.875rem;
