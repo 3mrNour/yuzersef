@@ -388,6 +388,7 @@ const CircularGallery = ({
   const fontRef = useRef(font);
   const [active, setActive] = useState(0);
   const [open, setOpen] = useState(false);
+  const [epoch, setEpoch] = useState(0);
   const list = Array.isArray(items) && items.length ? items : DEFAULT_ITEMS;
   const settings: Settings = {
     items: list,
@@ -1109,6 +1110,11 @@ const CircularGallery = ({
       }
     });
     intersection.observe(container);
+    const onContextLost = (event: Event) => {
+      event.preventDefault();
+      setEpoch(value => value + 1);
+    };
+    canvas.addEventListener('webglcontextlost', onContextLost);
     container.addEventListener('pointerdown', onPointerDown);
     container.addEventListener('pointermove', onPointerMove);
     container.addEventListener('pointerup', onPointerUp);
@@ -1147,6 +1153,7 @@ const CircularGallery = ({
       engineRef.current = null;
       resizeObserver.disconnect();
       intersection.disconnect();
+      canvas.removeEventListener('webglcontextlost', onContextLost);
       container.removeEventListener('pointerdown', onPointerDown);
       container.removeEventListener('pointermove', onPointerMove);
       container.removeEventListener('pointerup', onPointerUp);
@@ -1166,9 +1173,8 @@ const CircularGallery = ({
       gl.deleteBuffer(vertexBuffer);
       gl.deleteBuffer(indexBuffer);
       gl.deleteVertexArray(vao);
-      gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
-  }, []);
+  }, [epoch]);
 
   useEffect(() => {
     engineRef.current?.wake();
@@ -1187,7 +1193,7 @@ const CircularGallery = ({
       aria-label="Image gallery"
       {...rest}
     >
-      <canvas ref={canvasRef} className={CLASSES.canvas} aria-hidden="true" />
+      <canvas ref={canvasRef} key={epoch} className={CLASSES.canvas} aria-hidden="true" />
       <div ref={labelsRef} className={CLASSES.labels} aria-hidden="true" />
       <div ref={captionRef} className={CLASSES.caption} aria-hidden={!open}>
         {current?.description && <p className={CLASSES.captionText}>{current.description}</p>}
