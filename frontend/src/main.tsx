@@ -22,3 +22,22 @@ createRoot(document.getElementById("root")!).render(
     </LanguageProvider>
   </StrictMode>,
 );
+
+
+import Lenis from "lenis";
+import "lenis/dist/lenis.css";
+
+if (typeof window !== "undefined") {
+  const lenis = new Lenis({
+    lerp: 0.08,
+    smoothWheel: true,
+  });
+
+  function raf(time: number) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+
+  requestAnimationFrame(raf);
+}
+

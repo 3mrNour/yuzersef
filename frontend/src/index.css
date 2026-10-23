@@ -212,6 +212,28 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-forest-950);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--color-sand) 0%, var(--color-forest-600) 100%);
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--color-sand-strong) 0%, var(--color-forest-600) 100%);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-sand) var(--color-forest-950);
+  }
 }
 
 .float-a {

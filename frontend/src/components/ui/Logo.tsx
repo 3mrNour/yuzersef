@@ -14,10 +14,10 @@ export function Logo({ className, markClassName }: LogoProps) {
       <img
         src="/brand/logo.png"
         alt={t.brand.name}
-        width={80}
-        height={80}
+        width={126}
+        height={126}
         className={cn(
-          "h-16 w-16 shrink-0 object-contain sm:h-18 sm:w-18 lg:h-20 lg:w-20",
+          "h-32 w-32 shrink-0 object-contain sm:h-32 sm:w-32 lg:h-32 lg:w-32",
           markClassName,
         )}
       />
