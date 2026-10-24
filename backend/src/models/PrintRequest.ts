@@ -35,6 +35,13 @@ const printRequestSchema = new Schema<PrintRequest>(
     designPreviewUrl: { type: String, maxlength: 8_000_000 },
     designFileName: { type: String, maxlength: 200 },
     logoDataUrl: { type: String, maxlength: 7_000_000 },
+    studio3d: {
+      type: Schema.Types.Mixed,
+      validate: {
+        validator: (value: unknown) => value === undefined || JSON.stringify(value).length <= 8_000_000,
+        message: "studio3d payload is too large",
+      },
+    },
     status: { type: String, required: true, enum: ["received", "review", "confirmed", "closed"], default: "received" },
     createdAt: { type: String, required: true },
   },

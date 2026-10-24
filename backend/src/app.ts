@@ -88,6 +88,10 @@ export function createApp() {
   });
 
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    if (err && typeof err === "object" && "type" in err && err.type === "entity.too.large") {
+      res.status(413).json({ error: "payload_too_large", message: "The submitted design is too large." });
+      return;
+    }
     if (err instanceof ZodError) {
       res.status(400).json({ error: "validation", issues: err.issues });
       return;

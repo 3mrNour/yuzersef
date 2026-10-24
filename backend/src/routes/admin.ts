@@ -15,6 +15,8 @@ const paginationSchema = z.object({
 const statusSchema = z.object({
   status: z.enum(["received", "review", "confirmed", "closed"]),
 });
+const uniquePlacements = <T extends readonly string[]>(values: T) =>
+  new Set(values).size === values.length;
 
 export function isAuthorized(requestKey: string | undefined, configuredKey: string | undefined): boolean {
   if (!requestKey || !configuredKey) return false;
@@ -94,13 +96,13 @@ export function createAdminRouter(adminApiKey: string | undefined): Router {
   router.patch("/print-settings", async (req, res) => {
     const placements = z.record(
       z.enum(SERVICE_SLUGS),
-      z.array(z.enum(PRINT_PLACEMENTS)).min(1),
+      z.array(z.enum(PRINT_PLACEMENTS)).min(1).refine(uniquePlacements, "placements must be unique"),
     ).parse(req.body.placements);
     const profiles = z.record(z.string().min(1), z.object({
       productId: z.string().min(1),
       service: z.enum(SERVICE_SLUGS),
       productName: z.string().min(1),
-      placements: z.array(z.enum(PRINT_PLACEMENTS)).min(1),
+      placements: z.array(z.enum(PRINT_PLACEMENTS)).min(1).refine(uniquePlacements, "placements must be unique"),
       guidance: z.string().max(300),
     })).parse(req.body.profiles);
     for (const profile of Object.values(profiles)) {

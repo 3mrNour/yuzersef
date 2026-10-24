@@ -32,8 +32,25 @@ export interface PrintRequest {
   designPreviewUrl?: string;
   designFileName?: string;
   logoDataUrl?: string;
+  studio3d?: Studio3DRequest;
   status: RequestStatus;
   createdAt: string;
+}
+
+export interface Studio3DRequest {
+  version: 1;
+  tintHex: string;
+  sheetDataUrl: string;
+  faces: Partial<Record<"front" | "back" | "left-sleeve" | "right-sleeve", {
+    imageDataUrl: string;
+    aspect: number;
+  }>>;
+  decals: Partial<Record<"front" | "back" | "left-sleeve" | "right-sleeve", {
+    position: [number, number, number];
+    normal: [number, number, number];
+    scale: number;
+    spin: number;
+  }>>;
 }
 
 export interface ContactMessage {

@@ -1,4 +1,5 @@
 import type { ServiceSlug } from "../content";
+import type { Studio3DDesign } from "../features/studio/studio3d";
 
 export interface CreateRequestBody {
   name: string;
@@ -11,6 +12,7 @@ export interface CreateRequestBody {
   designPreviewUrl?: string;
   designFileName?: string;
   logoDataUrl?: string;
+  studio3d?: Studio3DDesign;
 }
 
 export interface RequestItem {
@@ -77,6 +79,7 @@ export interface AdminRequest extends TrackedRequest {
   designPreviewUrl?: string;
   designFileName?: string;
   logoDataUrl?: string;
+  studio3d?: Studio3DDesign;
 }
 
 export interface AdminContact {
@@ -136,8 +139,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (!response.ok) {
     let code = `request_failed_${response.status}`;
     try {
-      const body = await response.json() as { error?: string };
+      const body = await response.json() as { error?: string; message?: string };
       code = body.error ?? code;
+      if (body.message && body.error) code = `${body.error}:${body.message}`;
     } catch {
       // Keep the HTTP status when the server does not return JSON.
     }
@@ -165,7 +169,21 @@ export function signup(name: string, phone: string, email: string, password: str
 }
 
 export function fetchCurrentUser(): Promise<{ user: AuthUser | null }> {
-  return request("/api/auth/me");
+  return requestWithNetworkRetry("/api/auth/me");
+}
+
+async function requestWithNetworkRetry<T>(path: string, init?: RequestInit, attempts = 10): Promise<T> {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      return await request<T>(path, init);
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.code !== "network_error" || attempt === attempts - 1) {
+        throw error;
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, 500));
+    }
+  }
+  throw new ApiError("network_error", 0);
 }
 
 export function verifyEmail(token: string): Promise<{ ok: true }> {
@@ -219,7 +237,7 @@ function adminHeaders(apiKey: string): HeadersInit {
 }
 
 export function fetchAdminSummary(apiKey: string): Promise<AdminSummary> {
-  return request<AdminSummary>("/api/admin/summary", {
+  return requestWithNetworkRetry<AdminSummary>("/api/admin/summary", {
     headers: adminHeaders(apiKey),
   });
 }
@@ -231,13 +249,13 @@ export function fetchAdminRequests(
 ): Promise<AdminPage<AdminRequest>> {
   const query = new URLSearchParams({ page: String(page), limit: "12" });
   if (status !== "all") query.set("status", status);
-  return request<AdminPage<AdminRequest>>(`/api/admin/requests?${query}`, {
+  return requestWithNetworkRetry<AdminPage<AdminRequest>>(`/api/admin/requests?${query}`, {
     headers: adminHeaders(apiKey),
   });
 }
 
 export function fetchAdminContacts(apiKey: string, page: number): Promise<AdminPage<AdminContact>> {
-  return request<AdminPage<AdminContact>>(`/api/admin/contacts?page=${page}&limit=12`, {
+  return requestWithNetworkRetry<AdminPage<AdminContact>>(`/api/admin/contacts?page=${page}&limit=12`, {
     headers: adminHeaders(apiKey),
   });
 }
@@ -271,7 +289,7 @@ export function updateAdminItemPlacement(
 }
 
 export function fetchAdminPrintSettings(apiKey: string): Promise<{ placements: PrintPlacementSettings; profiles: Record<string, PrintPlacementProfile> }> {
-  return request<{ placements: PrintPlacementSettings; profiles: Record<string, PrintPlacementProfile> }>("/api/admin/print-settings", {
+  return requestWithNetworkRetry<{ placements: PrintPlacementSettings; profiles: Record<string, PrintPlacementProfile> }>("/api/admin/print-settings", {
     headers: adminHeaders(apiKey),
   });
 }
@@ -289,7 +307,7 @@ export function updateAdminPrintSettings(
 }
 
 export function fetchAdminPortfolio(apiKey: string): Promise<{ items: PortfolioItem[] }> {
-  return request("/api/admin/portfolio", { headers: adminHeaders(apiKey) });
+  return requestWithNetworkRetry("/api/admin/portfolio", { headers: adminHeaders(apiKey) });
 }
 
 export function createAdminPortfolioItem(apiKey: string, item: Omit<PortfolioItem, "id">): Promise<{ item: PortfolioItem }> {

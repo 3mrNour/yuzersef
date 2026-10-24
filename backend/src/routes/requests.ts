@@ -41,6 +41,22 @@ export const requestSchema = z
     logoDataUrl: z.string().max(7_000_000).refine((value) => value.startsWith("data:image/"), {
       message: "logoDataUrl must be an image data URL",
     }).optional(),
+    studio3d: z.object({
+      version: z.literal(1),
+      tintHex: z.string().regex(/^#[0-9a-f]{6}$/i),
+      sheetDataUrl: z.string().max(2_500_000).startsWith("data:image/png"),
+      faces: z.partialRecord(z.enum(["front", "back", "left-sleeve", "right-sleeve"]), z.object({
+        imageDataUrl: z.string().max(1_500_000).startsWith("data:image/"),
+        aspect: z.number().finite().positive().max(10),
+      })).refine((faces) => Object.keys(faces).length >= 1 && Object.keys(faces).length <= 4),
+      decals: z.partialRecord(z.enum(["front", "back", "left-sleeve", "right-sleeve"]), z.object({
+        position: z.tuple([z.number().finite(), z.number().finite(), z.number().finite()]),
+        normal: z.tuple([z.number().finite(), z.number().finite(), z.number().finite()]),
+        scale: z.number().finite().min(0.05).max(2),
+        // The 3D editor stores the visible rotation control in degrees.
+        spin: z.number().finite().min(0).max(360),
+      })).refine((decals) => Object.keys(decals).length >= 1 && Object.keys(decals).length <= 4),
+    }).optional(),
   })
   .superRefine((value, context) => {
     if (value.items.length !== value.quantity) {
@@ -48,6 +64,13 @@ export const requestSchema = z
         code: z.ZodIssueCode.custom,
         path: ["items"],
         message: "quantity must match the number of items",
+      });
+    }
+    if (value.studio3d && value.service !== "clothing") {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["studio3d"],
+        message: "3D studio designs are currently available for clothing only",
       });
     }
   });

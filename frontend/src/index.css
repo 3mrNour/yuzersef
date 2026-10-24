@@ -108,6 +108,10 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  button:not(:disabled):hover {
+    filter: brightness(1.14);
+  }
+
   ::selection {
     background: var(--color-sand);
     color: var(--color-forest-950);

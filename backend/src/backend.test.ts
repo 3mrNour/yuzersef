@@ -40,6 +40,45 @@ describe("backend request validation", () => {
     expect(result.success).toBe(false);
   });
 
+  it("accepts a 3D design with only the uploaded faces", () => {
+    const result = requestSchema.safeParse({
+      name: "Ahmed",
+      phone: "01012345678",
+      service: "clothing",
+      quantity: 1,
+      items: [{
+        productId: "tee-classic",
+        productName: "Classic Tee",
+        size: "M",
+        color: "Bone",
+        style: "Classic",
+        specialRequest: "",
+      }],
+      details: "",
+      studio3d: {
+        version: 1,
+        tintHex: "#ffffff",
+        sheetDataUrl: "data:image/png;base64,c2hlZXQ=",
+        faces: {
+          front: {
+            imageDataUrl: "data:image/png;base64,ZGVzaWdu",
+            aspect: 1,
+          },
+        },
+        decals: {
+          front: {
+            position: [0, 0, 0],
+            normal: [0, 0, 1],
+            scale: 0.3,
+            spin: 0,
+          },
+        },
+      },
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   it("allows an empty optional special request in the persisted schema", () => {
     const validationError = new PrintRequestModel({
       id: "test-id",
