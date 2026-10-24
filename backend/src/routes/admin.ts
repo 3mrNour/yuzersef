@@ -17,6 +17,13 @@ const statusSchema = z.object({
 });
 const uniquePlacements = <T extends readonly string[]>(values: T) =>
   new Set(values).size === values.length;
+const printProfileSchema = z.object({
+  productId: z.string().min(1),
+  service: z.enum(SERVICE_SLUGS),
+  productName: z.string().min(1),
+  placements: z.array(z.enum(PRINT_PLACEMENTS)).min(1).refine(uniquePlacements, "placements must be unique"),
+  guidance: z.string().max(300),
+});
 
 export function isAuthorized(requestKey: string | undefined, configuredKey: string | undefined): boolean {
   if (!requestKey || !configuredKey) return false;
@@ -90,7 +97,18 @@ export function createAdminRouter(adminApiKey: string | undefined): Router {
       { $setOnInsert: { key: "default", placements: defaultPrintPlacementSettings, profiles: defaultPrintPlacementProfiles } },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     ).lean({ flattenMaps: true }).exec();
-    res.json({ placements: settings?.placements ?? defaultPrintPlacementSettings, profiles: settings?.profiles ?? defaultPrintPlacementProfiles });
+    const profiles = settings?.profiles ?? defaultPrintPlacementProfiles;
+    const teeProfile = profiles["tee-classic"] ?? defaultPrintPlacementProfiles["tee-classic"];
+    if (settings?.profiles && Object.keys(settings.profiles).some((key) => key !== "tee-classic")) {
+      await PrintSettingsModel.updateOne(
+        { key: "default" },
+        { $set: { profiles: { "tee-classic": teeProfile } } },
+      ).exec();
+    }
+    res.json({
+      placements: settings?.placements ?? defaultPrintPlacementSettings,
+      profiles: { "tee-classic": teeProfile },
+    });
   });
 
   router.patch("/print-settings", async (req, res) => {
@@ -98,13 +116,7 @@ export function createAdminRouter(adminApiKey: string | undefined): Router {
       z.enum(SERVICE_SLUGS),
       z.array(z.enum(PRINT_PLACEMENTS)).min(1).refine(uniquePlacements, "placements must be unique"),
     ).parse(req.body.placements);
-    const profiles = z.record(z.string().min(1), z.object({
-      productId: z.string().min(1),
-      service: z.enum(SERVICE_SLUGS),
-      productName: z.string().min(1),
-      placements: z.array(z.enum(PRINT_PLACEMENTS)).min(1).refine(uniquePlacements, "placements must be unique"),
-      guidance: z.string().max(300),
-    })).parse(req.body.profiles);
+    const profiles = z.object({ "tee-classic": printProfileSchema }).strict().parse(req.body.profiles);
     for (const profile of Object.values(profiles)) {
       if (profile.placements.some((placement) => !placements[profile.service].includes(placement))) {
         res.status(400).json({ error: "profile_placement_not_allowed", productId: profile.productId });

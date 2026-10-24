@@ -74,7 +74,11 @@ export function createApp() {
       { $setOnInsert: { key: "default", placements: defaultPrintPlacementSettings, profiles: defaultPrintPlacementProfiles } },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     ).lean({ flattenMaps: true }).exec();
-    res.json({ placements: settings?.placements ?? defaultPrintPlacementSettings, profiles: settings?.profiles ?? defaultPrintPlacementProfiles });
+    const profiles = settings?.profiles ?? defaultPrintPlacementProfiles;
+    res.json({
+      placements: settings?.placements ?? defaultPrintPlacementSettings,
+      profiles: { "tee-classic": profiles["tee-classic"] ?? defaultPrintPlacementProfiles["tee-classic"] },
+    });
   });
 
   app.use("/api/requests", rateLimit(10, 10 * 60 * 1000), requestsRouter);
