@@ -56,6 +56,9 @@ node "..\node_modules\typescript\bin\tsc" --noEmit
 | `MONGODB_URI` | required | MongoDB connection string |
 | `MONGODB_DB` | `yuzersef` | MongoDB database name |
 | `ADMIN_API_KEY` | required for admin routes | Secret sent in the `x-admin-api-key` header |
+| `APP_URL` | `http://localhost:5173` | Frontend URL used in auth links |
+| `RESEND_API_KEY` | required | Resend API key for verification and password reset |
+| `AUTH_EMAIL_FROM` | required | Verified Resend sender address |
 
 Example:
 
@@ -65,6 +68,9 @@ ALLOWED_ORIGINS=https://yuzersef.example,https://www.yuzersef.example
 MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>/<database>?retryWrites=true&w=majority
 MONGODB_DB=yuzersef
 ADMIN_API_KEY=replace-with-a-long-random-secret
+APP_URL=http://localhost:5173
+RESEND_API_KEY=re_xxxxxxxxx
+AUTH_EMAIL_FROM=Yuzersef <no-reply@example.com>
 ```
 
 Set `ALLOWED_ORIGINS` in production. With no value, the API reflects the request origin.
@@ -83,6 +89,18 @@ Returns the five service slugs with Arabic and English labels.
 ### `POST /api/requests`
 
 Creates a print request and returns a tracking code.
+
+### Portfolio management
+
+The home page portfolio is stored in MongoDB and can be managed through the admin API:
+
+- `GET /api/portfolio` returns active portfolio items for the public site.
+- `GET /api/admin/portfolio` lists all items.
+- `POST /api/admin/portfolio` creates an item.
+- `PATCH /api/admin/portfolio/:id` updates an item.
+- `DELETE /api/admin/portfolio/:id` deletes an item.
+
+Admin portfolio routes use the same `x-admin-api-key` header as the rest of the admin API. Images are currently managed as URLs, including paths to files in `frontend/public`.
 
 ```json
 {

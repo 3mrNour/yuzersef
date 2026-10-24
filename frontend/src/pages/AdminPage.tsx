@@ -21,6 +21,10 @@ import {
   fetchAdminRequests,
   fetchAdminSummary,
   fetchAdminPrintSettings,
+  fetchAdminPortfolio,
+  createAdminPortfolioItem,
+  updateAdminPortfolioItem,
+  deleteAdminPortfolioItem,
   updateAdminItemPlacement,
   updateAdminRequestStatus,
   updateAdminPrintSettings,
@@ -31,6 +35,7 @@ import {
   type RequestStatus,
   type PrintPlacementSettings,
   type PrintPlacementProfile,
+  type PortfolioItem,
 } from "../lib/api";
 import type { ServiceSlug } from "../content";
 import { cn } from "../lib/cn";
@@ -105,7 +110,9 @@ export function AdminPage() {
   const [requestPages, setRequestPages] = useState(1);
   const [contactPages, setContactPages] = useState(1);
   const [requestFilter, setRequestFilter] = useState<RequestStatus | "all">("all");
-  const [section, setSection] = useState<"requests" | "contacts" | "settings">("requests");
+  const [section, setSection] = useState<"requests" | "contacts" | "settings" | "portfolio">("requests");
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
+  const [portfolioSaving, setPortfolioSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [updatingId, setUpdatingId] = useState("");
@@ -154,6 +161,8 @@ export function AdminPage() {
             settingsIntro: "حدد مواضع الطباعة المتاحة لكل نوع منتج قبل استقبال الطلبات.",
             saveSettings: "حفظ الإعدادات",
             settingsSaved: "تم حفظ إعدادات مواضع الطباعة.",
+            portfolio: "أعمالنا",
+            portfolioIntro: "أضف وعدّل واحذف الأعمال الظاهرة في الصفحة الرئيسية.",
           }
         : {
             title: "Operations dashboard",
@@ -195,6 +204,8 @@ export function AdminPage() {
             settingsIntro: "Choose which print positions customers can select for each product type.",
             saveSettings: "Save settings",
             settingsSaved: "Print position settings saved.",
+            portfolio: "Portfolio",
+            portfolioIntro: "Create, edit, and remove the work shown on the home page.",
           },
     [ar],
   );
@@ -212,11 +223,12 @@ export function AdminPage() {
     setLoading(true);
     setMessage("");
     try {
-      const [nextSummary, nextRequests, nextContacts, nextPrintSettings] = await Promise.all([
+      const [nextSummary, nextRequests, nextContacts, nextPrintSettings, nextPortfolio] = await Promise.all([
         fetchAdminSummary(key),
         fetchAdminRequests(key, requestPage, requestFilter),
         fetchAdminContacts(key, contactPage),
         fetchAdminPrintSettings(key),
+        fetchAdminPortfolio(key),
       ]);
       setSummary(nextSummary);
       setRequests(nextRequests.items);
@@ -225,6 +237,7 @@ export function AdminPage() {
       setContactPages(Math.max(1, nextContacts.pages));
       setPrintSettings(nextPrintSettings.placements);
       setPrintProfiles(nextPrintSettings.profiles);
+      setPortfolioItems(nextPortfolio.items);
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         sessionStorage.removeItem(KEY_STORAGE);
@@ -315,6 +328,51 @@ export function AdminPage() {
       setMessage(copy.genericError);
     } finally {
       setSettingsSaving(false);
+    }
+  }
+
+  async function savePortfolioItem(item: PortfolioItem) {
+      setPortfolioSaving(true);
+      try {
+        const result = await updateAdminPortfolioItem(key, item.id, item);
+        setPortfolioItems((current) => current.map((entry) => entry.id === item.id ? result.item : entry));
+      } catch {
+        setMessage(copy.genericError);
+      } finally {
+        setPortfolioSaving(false);
+      }
+    }
+
+  async function addPortfolioItem() {
+      setPortfolioSaving(true);
+      try {
+        const result = await createAdminPortfolioItem(key, {
+          category: "clothing",
+          titleAr: "عمل جديد",
+          titleEn: "New work",
+          altAr: "صورة عمل جديد",
+          altEn: "New portfolio work",
+          image: "/portfolio/clothing-tee-halftone.svg",
+          sortOrder: portfolioItems.length,
+          active: true,
+        });
+        setPortfolioItems((current) => [...current, result.item]);
+      } catch {
+        setMessage(copy.genericError);
+      } finally {
+        setPortfolioSaving(false);
+      }
+    }
+
+  async function removePortfolioItem(id: string) {
+      setPortfolioSaving(true);
+      try {
+        await deleteAdminPortfolioItem(key, id);
+        setPortfolioItems((current) => current.filter((item) => item.id !== id));
+      } catch {
+        setMessage(copy.genericError);
+      } finally {
+        setPortfolioSaving(false);
     }
   }
 
@@ -447,6 +505,9 @@ export function AdminPage() {
           <button type="button" onClick={() => setSection("settings")} className={cn(buttonClass(section === "settings" ? "primary" : "secondary"), "px-5")}>
             <Sparkle size={18} /> {copy.settings}
           </button>
+          <button type="button" onClick={() => setSection("portfolio")} className={cn(buttonClass(section === "portfolio" ? "primary" : "secondary"), "px-5")}>
+            <FileImage size={18} /> {copy.portfolio}
+          </button>
           {section === "requests" ? (
             <select
               value={requestFilter}
@@ -474,8 +535,11 @@ export function AdminPage() {
             onSave={() => void savePrintSettings()}
           />
         ) : null}
+        {section === "portfolio" ? (
+          <PortfolioPanel items={portfolioItems} copy={copy} saving={portfolioSaving} onAdd={() => void addPortfolioItem()} onSave={(item) => void savePortfolioItem(item)} onDelete={(id) => void removePortfolioItem(id)} />
+        ) : null}
 
-        {section !== "settings" ? <div className="mt-6 grid gap-6 xl:grid-cols-[1.45fr_0.95fr]">
+        {section !== "settings" && section !== "portfolio" ? <div className="mt-6 grid gap-6 xl:grid-cols-[1.45fr_0.95fr]">
           <div>
             {loading && !summary ? (
               <div className="flex items-center justify-center gap-3 py-20 text-sm text-[#dfe8ef]/65"><CircleNotch size={20} className="animate-spin text-[#f0d9b2]" /> {copy.refresh}</div>
@@ -504,7 +568,7 @@ export function AdminPage() {
           />
         </div> : null}
 
-        {section !== "settings" ? <Pagination page={section === "requests" ? requestPage : contactPage} pages={section === "requests" ? requestPages : contactPages} previous={copy.previous} next={copy.next} onChange={section === "requests" ? setRequestPage : setContactPage} /> : null}
+        {section !== "settings" && section !== "portfolio" ? <Pagination page={section === "requests" ? requestPage : contactPage} pages={section === "requests" ? requestPages : contactPages} previous={copy.previous} next={copy.next} onChange={section === "requests" ? setRequestPage : setContactPage} /> : null}
       </div>
     </main>
   );
@@ -590,6 +654,54 @@ function RequestTable({
         </article>
       )) : <EmptyState text={copy.noItems} />}
     </div>
+  );
+}
+
+function PortfolioPanel({
+  items,
+  copy,
+  saving,
+  onAdd,
+  onSave,
+  onDelete,
+}: {
+  items: PortfolioItem[];
+  copy: Record<string, string>;
+  saving: boolean;
+  onAdd: () => void;
+  onSave: (item: PortfolioItem) => void;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <section className="mt-6 rounded-[var(--radius-card)] border border-bone/15 bg-forest-900/55 p-5 sm:p-7">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-bone/10 pb-5">
+        <div><h2 className="text-2xl text-bone">{copy.portfolio}</h2><p className="mt-2 text-sm text-bone/60">{copy.portfolioIntro}</p></div>
+        <button type="button" onClick={onAdd} disabled={saving} className={cn(buttonClass("primary"), "px-5")}><Sparkle size={18} /> {copy.add ?? "Add work"}</button>
+      </div>
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        {items.map((item) => <PortfolioEditor key={item.id} item={item} saving={saving} onSave={onSave} onDelete={onDelete} />)}
+      </div>
+    </section>
+  );
+}
+
+function PortfolioEditor({ item, saving, onSave, onDelete }: { item: PortfolioItem; saving: boolean; onSave: (item: PortfolioItem) => void; onDelete: (id: string) => void }) {
+  const [draft, setDraft] = useState(item);
+  useEffect(() => setDraft(item), [item]);
+  const update = (field: keyof PortfolioItem, value: string | number | boolean) => setDraft((current) => ({ ...current, [field]: value }));
+  return (
+    <article className="rounded-[var(--radius-field)] border border-bone/10 bg-forest-950/45 p-4">
+      <img src={draft.image} alt={draft.altEn} className="mb-4 aspect-[4/3] w-full rounded-xl object-cover" />
+      <div className="grid gap-3 sm:grid-cols-2">
+        {(["titleAr", "titleEn", "altAr", "altEn", "image"] as const).map((field) => (
+          <label key={field} className={field === "image" ? "sm:col-span-2" : ""}><span className="mb-1 block text-xs text-bone/55">{field}</span><input value={draft[field]} onChange={(event) => update(field, event.target.value)} className="field min-h-[42px] py-2" /></label>
+        ))}
+        <label><span className="mb-1 block text-xs text-bone/55">category</span><select value={draft.category} onChange={(event) => update("category", event.target.value)} className="field min-h-[42px] py-2"><option value="clothing">Clothing / ملابس</option><option value="mugs">Mugs / مجات</option><option value="caps">Caps / كابات</option><option value="stickers">Stickers / ستيكرز</option><option value="cases">Cases / جرابات</option></select></label>
+        <label><span className="mb-1 block text-xs text-bone/55">sort order</span><input type="number" min="0" value={draft.sortOrder} onChange={(event) => update("sortOrder", Number(event.target.value))} className="field min-h-[42px] py-2" /></label>
+      </div>
+      <label className="mt-3 flex items-center gap-2 text-sm text-bone/70"><input type="checkbox" checked={draft.active} onChange={(event) => update("active", event.target.checked)} /> Visible on home page</label>
+      <div className="mt-4 flex justify-end gap-2"><button type="button" onClick={() => onDelete(draft.id)} disabled={saving} className={cn(buttonClass("secondary"), "px-4 text-danger")}>Delete</button><button type="button" onClick={() => onSave(draft)} disabled={saving} className={cn(buttonClass("primary"), "px-4")}>Save</button></div>
+    </article>
   );
 }
 

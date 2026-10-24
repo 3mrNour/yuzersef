@@ -14,11 +14,14 @@ import "@fontsource/space-grotesk/latin-600.css";
 import "./index.css";
 import { App } from "./App";
 import { LanguageProvider } from "./providers/LanguageProvider";
+import { AuthProvider } from "./providers/AuthProvider";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <LanguageProvider>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </LanguageProvider>
   </StrictMode>,
 );
@@ -40,4 +43,3 @@ if (typeof window !== "undefined") {
 
   requestAnimationFrame(raf);
 }
-

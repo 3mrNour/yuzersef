@@ -10,6 +10,8 @@ import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { AdminPage } from "./pages/AdminPage";
+import { AuthPage } from "./pages/AuthPage";
+import { AccountPage } from "./pages/AccountPage";
 
 const DevPrintAreaPage = lazy(async () => {
   const module = await import("./pages/DevPrintAreaPage");
@@ -28,6 +30,8 @@ export function App() {
         <Routes>
           <Route path="admin" element={<AdminPage />} />
           <Route element={<Layout />}>
+            <Route path="auth" element={<AuthPage />} />
+            <Route path="account" element={<AccountPage />} />
             <Route index element={<Home />} />
             <Route path="request" element={<RequestPage />} />
             <Route path="track" element={<TrackPage />} />

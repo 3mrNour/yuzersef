@@ -5,6 +5,7 @@ import { PrintRequestModel, toPrintRequest } from "../models/PrintRequest.js";
 import { createCode, SERVICE_SLUGS } from "../types.js";
 import { phoneSchema } from "../validation.js";
 import { defaultPrintPlacementProfiles, defaultPrintPlacementSettings, PrintSettingsModel } from "../models/PrintSettings.js";
+import { requireUser, type AuthenticatedRequest } from "../auth.js";
 
 export const requestSchema = z
   .object({
@@ -53,7 +54,8 @@ export const requestSchema = z
 
 export const requestsRouter = Router();
 
-requestsRouter.post("/", async (req, res) => {
+requestsRouter.post("/", requireUser, async (req, res) => {
+  const user = (req as AuthenticatedRequest).user;
   const input = requestSchema.parse(req.body);
   const settings = await PrintSettingsModel.findOne({ key: "default" }).lean({ flattenMaps: true }).exec();
   const placements = (settings?.placements ?? defaultPrintPlacementSettings) as Record<string, string[]>;
@@ -76,6 +78,7 @@ requestsRouter.post("/", async (req, res) => {
     try {
       created = await PrintRequestModel.create({
         id: randomUUID(),
+        userId: user.id,
         code: createCode(),
         ...input,
         status: "received",
@@ -97,14 +100,15 @@ requestsRouter.post("/", async (req, res) => {
   });
 });
 
-requestsRouter.get("/:code", async (req, res) => {
+requestsRouter.get("/:code", requireUser, async (req, res) => {
+  const user = (req as AuthenticatedRequest).user;
   const code = String(req.params.code ?? "").trim().toUpperCase();
   if (code.length < 4 || code.length > 40) {
     res.status(400).json({ error: "invalid_code" });
     return;
   }
 
-  const request = await PrintRequestModel.findOne({ code }).exec();
+  const request = await PrintRequestModel.findOne({ code, userId: user.id }).exec();
   if (!request) {
     res.status(404).json({ error: "not_found" });
     return;
@@ -118,5 +122,16 @@ requestsRouter.get("/:code", async (req, res) => {
     quantity: publicRequest.quantity,
     items: publicRequest.items,
     createdAt: publicRequest.createdAt,
+  });
+
+  requestsRouter.get("/", requireUser, async (req, res) => {
+    const user = (req as AuthenticatedRequest).user;
+    const requests = await PrintRequestModel.find({ userId: user.id })
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .select("code status service quantity items createdAt")
+      .lean()
+      .exec();
+    res.json({ items: requests });
   });
 });

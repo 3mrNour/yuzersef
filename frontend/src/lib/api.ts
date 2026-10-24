@@ -41,6 +41,18 @@ export interface PrintPlacementProfile {
   guidance: string;
 }
 
+export interface PortfolioItem {
+  id: string;
+  category: ServiceSlug;
+  titleAr: string;
+  titleEn: string;
+  altAr: string;
+  altEn: string;
+  image: string;
+  sortOrder: number;
+  active: boolean;
+}
+
 export interface TrackedRequest {
   code: string;
   status: RequestStatus;
@@ -96,11 +108,13 @@ const API_BASE = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
 
 export class ApiError extends Error {
   status: number;
+  code: string;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, code = message) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -109,6 +123,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     response = await fetch(`${API_BASE}${path}`, {
       ...init,
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         ...init?.headers,
@@ -119,10 +134,58 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   if (!response.ok) {
-    throw new ApiError(`request_failed_${response.status}`, response.status);
+    let code = `request_failed_${response.status}`;
+    try {
+      const body = await response.json() as { error?: string };
+      code = body.error ?? code;
+    } catch {
+      // Keep the HTTP status when the server does not return JSON.
+    }
+    throw new ApiError(code, response.status, code);
   }
 
   return (await response.json()) as T;
+}
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  emailVerified: boolean;
+  offerNote: string | null;
+}
+
+export function login(email: string, password: string): Promise<{ user: AuthUser }> {
+  return request("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
+}
+
+export function signup(name: string, phone: string, email: string, password: string, confirmPassword: string): Promise<{ user: AuthUser; message: string }> {
+  return request("/api/auth/signup", { method: "POST", body: JSON.stringify({ name, phone, email, password, confirmPassword }) });
+}
+
+export function fetchCurrentUser(): Promise<{ user: AuthUser | null }> {
+  return request("/api/auth/me");
+}
+
+export function verifyEmail(token: string): Promise<{ ok: true }> {
+  return request(`/api/auth/verify?token=${encodeURIComponent(token)}`);
+}
+
+export function forgotPassword(email: string): Promise<{ ok: true }> {
+  return request("/api/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) });
+}
+
+export function resetPassword(token: string, password: string): Promise<{ ok: true }> {
+  return request("/api/auth/reset-password", { method: "POST", body: JSON.stringify({ token, password }) });
+}
+
+export function logout(): Promise<{ ok: true }> {
+  return request("/api/auth/logout", { method: "POST" });
+}
+
+export function fetchMyRequests(): Promise<{ items: TrackedRequest[] }> {
+  return request("/api/requests");
 }
 
 export function createRequest(body: CreateRequestBody): Promise<CreatedRequest> {
@@ -145,6 +208,10 @@ export function sendContact(body: ContactBody): Promise<{ ok: true }> {
 
 export function fetchPrintPlacementSettings(): Promise<{ placements: PrintPlacementSettings; profiles: Record<string, PrintPlacementProfile> }> {
   return request<{ placements: PrintPlacementSettings; profiles: Record<string, PrintPlacementProfile> }>("/api/settings/print-placements");
+}
+
+export function fetchPortfolio(): Promise<{ items: PortfolioItem[] }> {
+  return request("/api/portfolio");
 }
 
 function adminHeaders(apiKey: string): HeadersInit {
@@ -219,4 +286,20 @@ export function updateAdminPrintSettings(
     headers: adminHeaders(apiKey),
     body: JSON.stringify({ placements, profiles }),
   });
+}
+
+export function fetchAdminPortfolio(apiKey: string): Promise<{ items: PortfolioItem[] }> {
+  return request("/api/admin/portfolio", { headers: adminHeaders(apiKey) });
+}
+
+export function createAdminPortfolioItem(apiKey: string, item: Omit<PortfolioItem, "id">): Promise<{ item: PortfolioItem }> {
+  return request("/api/admin/portfolio", { method: "POST", headers: adminHeaders(apiKey), body: JSON.stringify(item) });
+}
+
+export function updateAdminPortfolioItem(apiKey: string, id: string, item: Partial<Omit<PortfolioItem, "id">>): Promise<{ item: PortfolioItem }> {
+  return request(`/api/admin/portfolio/${encodeURIComponent(id)}`, { method: "PATCH", headers: adminHeaders(apiKey), body: JSON.stringify(item) });
+}
+
+export function deleteAdminPortfolioItem(apiKey: string, id: string): Promise<void> {
+  return request(`/api/admin/portfolio/${encodeURIComponent(id)}`, { method: "DELETE", headers: adminHeaders(apiKey) });
 }

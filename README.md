@@ -77,6 +77,9 @@ The Vite dev server proxies `/api` to the backend, so no frontend environment va
 | `MONGODB_URI` | backend | required | MongoDB connection string |
 | `MONGODB_DB` | backend | `yuzersef` | MongoDB database name |
 | `ADMIN_API_KEY` | backend | required for admin routes | Secret for the protected admin API |
+| `APP_URL` | backend | `http://localhost:5173` | Frontend URL used in auth links |
+| `RESEND_API_KEY` | backend | required | Resend API key for auth email |
+| `AUTH_EMAIL_FROM` | backend | required | Verified Resend sender |
 | `VITE_API_URL` | frontend | empty | Absolute API base URL for a split deployment |
 
 Example production values:
@@ -88,6 +91,9 @@ ALLOWED_ORIGINS=https://yuzersef.example
 MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>/<database>?retryWrites=true&w=majority
 MONGODB_DB=yuzersef
 ADMIN_API_KEY=replace-with-a-long-random-secret
+APP_URL=http://localhost:5173
+RESEND_API_KEY=re_xxxxxxxxx
+AUTH_EMAIL_FROM=Yuzersef <no-reply@example.com>
 
 # frontend build
 VITE_API_URL=https://api.yuzersef.example
@@ -240,6 +246,8 @@ The studio product data lives in `frontend/src/features/studio/mockProducts.ts`.
 ## Deployment notes
 
 1. Set `MONGODB_URI` in `backend/.env`; never commit the credentials.
+
+The home page `أعمالنا` portfolio is managed from the admin dashboard. Open `/admin`, enter the admin key, and use the **Portfolio / أعمالنا** section to create, edit, hide, reorder, or delete items. Portfolio images are currently entered as URLs.
 2. Build the frontend with `npm run build --workspace frontend`, then serve `frontend/dist`.
 3. Build and run the API with `npm run build --workspace backend` and `npm run start --workspace backend`.
 4. Route `/api` to the API process on the same origin, or set `VITE_API_URL` at build time and configure `ALLOWED_ORIGINS` on the backend.

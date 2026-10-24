@@ -20,6 +20,7 @@ export interface RequestItem {
 
 export interface PrintRequest {
   id: string;
+  userId: string;
   code: string;
   name: string;
   phone: string;
