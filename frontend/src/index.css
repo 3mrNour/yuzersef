@@ -207,6 +207,32 @@
     cursor: not-allowed;
   }
 
+  .auth-input {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--color-bone) 20%, transparent);
+    background: color-mix(in srgb, var(--color-forest-950) 78%, transparent);
+    padding: 0.75rem 1rem;
+    color: var(--color-bone);
+    transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+  }
+
+  .auth-input::placeholder {
+    color: color-mix(in srgb, var(--color-bone) 42%, transparent);
+  }
+
+  .auth-input:hover {
+    border-color: color-mix(in srgb, var(--color-sand) 50%, transparent);
+  }
+
+  .auth-input:focus {
+    outline: none;
+    border-color: var(--color-sand);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-sand) 16%, transparent);
+    background: color-mix(in srgb, var(--color-forest-900) 85%, transparent);
+  }
+
   .no-scrollbar {
     scrollbar-width: none;
   }

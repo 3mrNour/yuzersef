@@ -138,6 +138,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export interface AuthUser {
   id: string;
   name: string;
+  phone: string;
   email: string;
   emailVerified: boolean;
   offerNote: string | null;
@@ -147,8 +148,8 @@ export function login(email: string, password: string): Promise<{ user: AuthUser
   return request("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
 }
 
-export function signup(name: string, email: string, password: string): Promise<{ user: AuthUser; message: string }> {
-  return request("/api/auth/signup", { method: "POST", body: JSON.stringify({ name, email, password }) });
+export function signup(name: string, phone: string, email: string, password: string, confirmPassword: string): Promise<{ user: AuthUser; message: string }> {
+  return request("/api/auth/signup", { method: "POST", body: JSON.stringify({ name, phone, email, password, confirmPassword }) });
 }
 
 export function fetchCurrentUser(): Promise<{ user: AuthUser | null }> {

@@ -27,10 +27,11 @@ export async function verifyPassword(password: string, encoded: string): Promise
   return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
 
-export async function createUser(name: string, email: string, password: string): Promise<UserDocument> {
+export async function createUser(name: string, phone: string, email: string, password: string): Promise<UserDocument> {
   return UserModel.create({
     id: randomUUID(),
     name,
+    phone,
     email: email.toLowerCase(),
     passwordHash: await hashPassword(password),
     createdAt: new Date().toISOString(),
