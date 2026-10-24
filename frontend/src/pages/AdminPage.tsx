@@ -164,6 +164,7 @@ export function AdminPage() {
             settingsSaved: "تم حفظ إعدادات مواضع الطباعة.",
             portfolio: "أعمالنا",
             portfolioIntro: "أضف وعدّل واحذف الأعمال الظاهرة في الصفحة الرئيسية.",
+            duplicatePortfolioImage: "الصورة مستخدمة بالفعل. اختر صورة مختلفة قبل الحفظ.",
           }
         : {
             title: "Operations dashboard",
@@ -207,6 +208,7 @@ export function AdminPage() {
             settingsSaved: "Print position settings saved.",
             portfolio: "Portfolio",
             portfolioIntro: "Create, edit, and remove the work shown on the home page.",
+            duplicatePortfolioImage: "That image is already used. Choose a different image before saving.",
           },
     [ar],
   );
@@ -335,37 +337,45 @@ export function AdminPage() {
   async function savePortfolioItem(item: PortfolioItem) {
       setPortfolioSaving(true);
       try {
+        if (item.id.startsWith("draft-")) {
+          const { id: _draftId, ...newItem } = item;
+          const result = await createAdminPortfolioItem(key, newItem);
+          setPortfolioItems((current) => current.map((entry) => entry.id === item.id ? result.item : entry));
+          return;
+        }
         const result = await updateAdminPortfolioItem(key, item.id, item);
         setPortfolioItems((current) => current.map((entry) => entry.id === item.id ? result.item : entry));
-      } catch {
-        setMessage(copy.genericError);
+      } catch (error) {
+        setMessage(error instanceof ApiError && error.code === "duplicate_image"
+          ? copy.duplicatePortfolioImage
+          : copy.genericError);
       } finally {
         setPortfolioSaving(false);
       }
     }
 
   async function addPortfolioItem() {
-      setPortfolioSaving(true);
-      try {
-        const result = await createAdminPortfolioItem(key, {
+      setPortfolioItems((current) => [
+        ...current,
+        {
+          id: `draft-${Date.now()}`,
           category: "clothing",
           titleAr: "عمل جديد",
           titleEn: "New work",
           altAr: "صورة عمل جديد",
           altEn: "New portfolio work",
           image: "/mock/tshirt.jpg",
-          sortOrder: portfolioItems.length,
+          sortOrder: current.length,
           active: true,
-        });
-        setPortfolioItems((current) => [...current, result.item]);
-      } catch {
-        setMessage(copy.genericError);
-      } finally {
-        setPortfolioSaving(false);
-      }
+        },
+      ]);
     }
 
   async function removePortfolioItem(id: string) {
+      if (id.startsWith("draft-")) {
+        setPortfolioItems((current) => current.filter((item) => item.id !== id));
+        return;
+      }
       setPortfolioSaving(true);
       try {
         await deleteAdminPortfolioItem(key, id);
