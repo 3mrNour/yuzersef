@@ -19,6 +19,15 @@ const itemSchema = z.object({
 export const portfolioRouter = Router();
 
 portfolioRouter.get("/", async (_req, res) => {
+  await PortfolioItemModel.bulkWrite(
+    defaultPortfolioItems.map((item) => ({
+      updateOne: {
+        filter: { id: item.id, image: { $regex: /^\/portfolio\// } },
+        update: { $set: { image: item.image } },
+      },
+    })),
+    { ordered: false },
+  );
   let items = await PortfolioItemModel.find({ active: true }).sort({ sortOrder: 1 }).lean().exec();
   if (!items.length && (await PortfolioItemModel.countDocuments().exec()) === 0) {
     await PortfolioItemModel.insertMany(defaultPortfolioItems, { ordered: false });
