@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowUpRight } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import type { CategorySlug } from "../content";
@@ -7,6 +7,7 @@ import { useLanguage } from "../providers/LanguageProvider";
 import { DemoTag } from "../components/ui/DemoTag";
 import { Reveal } from "../components/ui/Reveal";
 import { SectionHeading } from "../components/ui/SectionHeading";
+import { fetchPortfolio, type PortfolioItem } from "../lib/api";
 
 const ratios = [
   "aspect-[4/5]",
@@ -18,17 +19,39 @@ const ratios = [
 ];
 
 export function PortfolioGallery() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [filter, setFilter] = useState<CategorySlug | "all">("all");
+  const [managedItems, setManagedItems] = useState<PortfolioItem[] | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    void fetchPortfolio().then((result) => {
+      if (active) setManagedItems(result.items);
+    }).catch(() => {
+      if (active) setManagedItems([]);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const labels = useMemo(() => {
     return Object.fromEntries(t.portfolio.categories.map((item) => [item.slug, item.label]));
   }, [t.portfolio.categories]);
 
   const items = useMemo(() => {
-    if (filter === "all") return t.portfolio.items;
-    return t.portfolio.items.filter((item) => item.category === filter);
-  }, [filter, t.portfolio.items]);
+    const source = managedItems
+      ? managedItems.map((item) => ({
+          id: item.id,
+          category: item.category,
+          image: item.image,
+          title: lang === "ar" ? item.titleAr : item.titleEn,
+          alt: lang === "ar" ? item.altAr : item.altEn,
+        }))
+      : t.portfolio.items;
+    if (filter === "all") return source;
+    return source.filter((item) => item.category === filter);
+  }, [filter, lang, managedItems, t]);
 
   const filters: { slug: CategorySlug | "all"; label: string }[] = [
     { slug: "all", label: t.portfolio.all },

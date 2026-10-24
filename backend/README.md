@@ -90,6 +90,18 @@ Returns the five service slugs with Arabic and English labels.
 
 Creates a print request and returns a tracking code.
 
+### Portfolio management
+
+The home page portfolio is stored in MongoDB and can be managed through the admin API:
+
+- `GET /api/portfolio` returns active portfolio items for the public site.
+- `GET /api/admin/portfolio` lists all items.
+- `POST /api/admin/portfolio` creates an item.
+- `PATCH /api/admin/portfolio/:id` updates an item.
+- `DELETE /api/admin/portfolio/:id` deletes an item.
+
+Admin portfolio routes use the same `x-admin-api-key` header as the rest of the admin API. Images are currently managed as URLs, including paths to files in `frontend/public`.
+
 ```json
 {
   "name": "Ahmed",

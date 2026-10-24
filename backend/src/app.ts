@@ -6,6 +6,7 @@ import { contactRouter } from "./routes/contact.js";
 import { requestsRouter } from "./routes/requests.js";
 import { defaultPrintPlacementProfiles, defaultPrintPlacementSettings, PrintSettingsModel } from "./models/PrintSettings.js";
 import { authRouter } from "./routes/auth.js";
+import { adminPortfolioRouter, portfolioRouter } from "./routes/portfolio.js";
 
 const SERVICE_LABELS = [
   { slug: "clothing", ar: "ملابس مطبوعة", en: "Printed clothing" },
@@ -65,6 +66,7 @@ export function createApp() {
   app.get("/api/services", (_req, res) => {
     res.json({ services: SERVICE_LABELS });
   });
+  app.use("/api/portfolio", portfolioRouter);
 
   app.get("/api/settings/print-placements", async (_req, res) => {
     const settings = await PrintSettingsModel.findOneAndUpdate(
@@ -79,6 +81,7 @@ export function createApp() {
   app.use("/api/auth", rateLimit(12, 10 * 60 * 1000), authRouter);
   app.use("/api/contact", rateLimit(6, 10 * 60 * 1000), contactRouter);
   app.use("/api/admin", createAdminRouter(process.env.ADMIN_API_KEY));
+  app.use("/api/admin/portfolio", createAdminRouter(process.env.ADMIN_API_KEY), adminPortfolioRouter);
 
   app.use((_req, res) => {
     res.status(404).json({ error: "not_found" });

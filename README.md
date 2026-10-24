@@ -242,6 +242,8 @@ The studio product data lives in `frontend/src/features/studio/mockProducts.ts`.
 ## Deployment notes
 
 1. Set `MONGODB_URI` in `backend/.env`; never commit the credentials.
+
+The home page `أعمالنا` portfolio is managed from the admin dashboard. Open `/admin`, enter the admin key, and use the **Portfolio / أعمالنا** section to create, edit, hide, reorder, or delete items. Portfolio images are currently entered as URLs.
 2. Build the frontend with `npm run build --workspace frontend`, then serve `frontend/dist`.
 3. Build and run the API with `npm run build --workspace backend` and `npm run start --workspace backend`.
 4. Route `/api` to the API process on the same origin, or set `VITE_API_URL` at build time and configure `ALLOWED_ORIGINS` on the backend.

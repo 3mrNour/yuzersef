@@ -41,6 +41,18 @@ export interface PrintPlacementProfile {
   guidance: string;
 }
 
+export interface PortfolioItem {
+  id: string;
+  category: ServiceSlug;
+  titleAr: string;
+  titleEn: string;
+  altAr: string;
+  altEn: string;
+  image: string;
+  sortOrder: number;
+  active: boolean;
+}
+
 export interface TrackedRequest {
   code: string;
   status: RequestStatus;
@@ -198,6 +210,10 @@ export function fetchPrintPlacementSettings(): Promise<{ placements: PrintPlacem
   return request<{ placements: PrintPlacementSettings; profiles: Record<string, PrintPlacementProfile> }>("/api/settings/print-placements");
 }
 
+export function fetchPortfolio(): Promise<{ items: PortfolioItem[] }> {
+  return request("/api/portfolio");
+}
+
 function adminHeaders(apiKey: string): HeadersInit {
   return { "x-admin-api-key": apiKey };
 }
@@ -270,4 +286,20 @@ export function updateAdminPrintSettings(
     headers: adminHeaders(apiKey),
     body: JSON.stringify({ placements, profiles }),
   });
+}
+
+export function fetchAdminPortfolio(apiKey: string): Promise<{ items: PortfolioItem[] }> {
+  return request("/api/admin/portfolio", { headers: adminHeaders(apiKey) });
+}
+
+export function createAdminPortfolioItem(apiKey: string, item: Omit<PortfolioItem, "id">): Promise<{ item: PortfolioItem }> {
+  return request("/api/admin/portfolio", { method: "POST", headers: adminHeaders(apiKey), body: JSON.stringify(item) });
+}
+
+export function updateAdminPortfolioItem(apiKey: string, id: string, item: Partial<Omit<PortfolioItem, "id">>): Promise<{ item: PortfolioItem }> {
+  return request(`/api/admin/portfolio/${encodeURIComponent(id)}`, { method: "PATCH", headers: adminHeaders(apiKey), body: JSON.stringify(item) });
+}
+
+export function deleteAdminPortfolioItem(apiKey: string, id: string): Promise<void> {
+  return request(`/api/admin/portfolio/${encodeURIComponent(id)}`, { method: "DELETE", headers: adminHeaders(apiKey) });
 }
