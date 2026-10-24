@@ -6,6 +6,7 @@ export type PrintRequestDocument = HydratedDocument<PrintRequest>;
 const printRequestSchema = new Schema<PrintRequest>(
   {
     id: { type: String, required: true, unique: true, index: true },
+    userId: { type: String, required: true, index: true },
     code: { type: String, required: true, unique: true, uppercase: true, index: true },
     name: { type: String, required: true, trim: true, maxlength: 80 },
     phone: { type: String, required: true, trim: true, maxlength: 20 },

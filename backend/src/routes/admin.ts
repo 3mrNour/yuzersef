@@ -5,6 +5,7 @@ import { ContactMessageModel } from "../models/ContactMessage.js";
 import { PrintRequestModel } from "../models/PrintRequest.js";
 import { defaultPrintPlacementProfiles, defaultPrintPlacementSettings, PrintSettingsModel } from "../models/PrintSettings.js";
 import { PRINT_PLACEMENTS, SERVICE_SLUGS } from "../types.js";
+import { UserModel } from "../models/User.js";
 
 const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -157,6 +158,30 @@ export function createAdminRouter(adminApiKey: string | undefined): Router {
       ContactMessageModel.countDocuments().exec(),
     ]);
     res.json({ items, page, limit, total, pages: Math.ceil(total / limit) });
+  });
+
+  router.get("/customers", async (req, res) => {
+    const { page, limit } = paginationSchema.parse(req.query);
+    const skip = (page - 1) * limit;
+    const [items, total] = await Promise.all([
+      UserModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit).select("id name email emailVerifiedAt offerNote createdAt").lean().exec(),
+      UserModel.countDocuments().exec(),
+    ]);
+    res.json({ items, page, limit, total, pages: Math.ceil(total / limit) });
+  });
+
+  router.patch("/customers/:id/offer", async (req, res) => {
+    const { offerNote } = z.object({ offerNote: z.string().trim().max(1000) }).parse(req.body);
+    const user = await UserModel.findOneAndUpdate(
+      { id: req.params.id },
+      { $set: { offerNote } },
+      { new: true, runValidators: true },
+    ).select("id name email emailVerifiedAt offerNote createdAt").lean().exec();
+    if (!user) {
+      res.status(404).json({ error: "not_found" });
+      return;
+    }
+    res.json({ customer: user });
   });
 
   return router;

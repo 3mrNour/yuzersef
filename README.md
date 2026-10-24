@@ -74,6 +74,9 @@ The Vite dev server proxies `/api` to the backend, so no frontend environment va
 | `MONGODB_URI` | backend | required | MongoDB connection string |
 | `MONGODB_DB` | backend | `yuzersef` | MongoDB database name |
 | `ADMIN_API_KEY` | backend | required for admin routes | Secret for the protected admin API |
+| `APP_URL` | backend | `http://localhost:5173` | Frontend URL used in auth links |
+| `RESEND_API_KEY` | backend | required | Resend API key for auth email |
+| `AUTH_EMAIL_FROM` | backend | required | Verified Resend sender |
 | `VITE_API_URL` | frontend | empty | Absolute API base URL for a split deployment |
 
 Example production values:
@@ -85,6 +88,9 @@ ALLOWED_ORIGINS=https://yuzersef.example
 MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>/<database>?retryWrites=true&w=majority
 MONGODB_DB=yuzersef
 ADMIN_API_KEY=replace-with-a-long-random-secret
+APP_URL=http://localhost:5173
+RESEND_API_KEY=re_xxxxxxxxx
+AUTH_EMAIL_FROM=Yuzersef <no-reply@example.com>
 
 # frontend build
 VITE_API_URL=https://api.yuzersef.example

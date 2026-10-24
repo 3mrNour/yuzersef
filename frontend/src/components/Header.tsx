@@ -4,12 +4,14 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "../lib/cn";
 import { buttonClass } from "../lib/styles";
 import { useLanguage } from "../providers/LanguageProvider";
+import { useAuth } from "../providers/AuthProvider";
 import { CtaArrow } from "./ui/CtaArrow";
 import { LanguageToggle } from "./ui/LanguageToggle";
 import { Logo } from "./ui/Logo";
 
 export function Header() {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
@@ -53,6 +55,9 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          <Link to={user ? "/account" : "/auth"} className="hidden text-sm text-bone/70 hover:text-bone sm:block">
+            {user ? user.name : "Sign in"}
+          </Link>
           <div className="hidden sm:block">
             <LanguageToggle />
           </div>

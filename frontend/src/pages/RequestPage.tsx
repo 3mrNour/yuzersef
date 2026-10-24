@@ -23,6 +23,7 @@ import { cn } from "../lib/cn";
 import { buttonClass } from "../lib/styles";
 import { isValidHttpUrl, isValidPhone, normalizePhone } from "../lib/validation";
 import { useLanguage } from "../providers/LanguageProvider";
+import { useAuth } from "../providers/AuthProvider";
 
 const SERVICE_ORDER: ServiceSlug[] = ["clothing", "mugs", "caps", "stickers", "cases"];
 const DEFAULT_PLACEMENTS: PrintPlacement[] = ["front", "back", "left-sleeve", "right-sleeve", "custom"];
@@ -86,6 +87,7 @@ function getDefaultPiece(
 
 export function RequestPage() {
   const { t, lang } = useLanguage();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { draft, clearDraft } = useDesignDraft();
@@ -112,6 +114,19 @@ export function RequestPage() {
   const [status, setStatus] = useState<Status>("idle");
   const [code, setCode] = useState("");
   const successRef = useRef<HTMLDivElement>(null);
+
+  if (loading) return null;
+  if (!user) {
+    return (
+      <>
+        <PageHeader title={t.request.title} intro={t.request.intro} />
+        <div className="shell py-16 text-bone">
+          <p className="text-lg">Please sign in or create an account before submitting a print request.</p>
+          <Link to="/auth" className={`${buttonClass("primary")} mt-6 inline-flex`}>Sign in or sign up</Link>
+        </div>
+      </>
+    );
+  }
 
   useEffect(() => {
     if (status === "success") successRef.current?.focus();

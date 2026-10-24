@@ -43,6 +43,7 @@ describe("backend request validation", () => {
   it("allows an empty optional special request in the persisted schema", () => {
     const validationError = new PrintRequestModel({
       id: "test-id",
+      userId: "test-user-id",
       code: "YZ-TEST",
       name: "Ahmed",
       phone: "01012345678",
