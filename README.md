@@ -150,12 +150,13 @@ node ..\node_modules\tsx\dist\cli.mjs src\index.ts
 | `/` | Home: hero, services, studio teaser, process, portfolio, about, FAQ, contact |
 | `/request` | Request form, optional `?service=clothing` prefill |
 | `/track` | Order tracking by a real request code |
-| `/studio` | Interactive mockup studio with PNG export and request handoff |
+| `/studio` | 3D mockup studio (Three.js): per-face print placement and branded all-faces export |
+| `/studio/classic` | Canvas 2D mockup studio with PNG export and request handoff |
 | `/privacy` | Privacy policy |
 | `/terms` | Terms of use |
 | `*` | Arabic 404 page |
 
-`/dev/print-area` (print-area calibration) and `/dev/studio-3d` (3D print-placement prototype) are development-only pages. They are not registered in production builds.
+`/dev/print-area` (print-area calibration) is a development-only page. `/dev/studio-3d` (the 3D prototype alias) is also dev-only; the 3D studio itself lives at `/studio`.
 
 ## API
 
@@ -236,7 +237,7 @@ The studio product data lives in `frontend/src/features/studio/mockProducts.ts`.
 - The logo mark and all portfolio images are generated placeholders.
 - The social links for TikTok and Facebook are search URLs, not confirmed profile URLs.
 - The studio uses generated SVG product artwork, not photographed products. The preview, colours, and print areas are demo data.
-- The 3D prototype at `/dev/studio-3d` uses an educational-license placeholder tee model (`frontend/public/models/shirt_baked.glb`). Production needs a purchased, print-ready garment model with clean UV drape. The prototype is not wired to the backend and keeps its per-face designs in memory only.
+- The 3D studio at `/studio` uses an educational-license placeholder tee model (`frontend/public/models/shirt_baked.glb`). Production needs a purchased, print-ready garment model with clean UV drape. The studio is not wired to the backend and keeps its per-face designs in memory only.
 - The studio exports a 1200px PNG and keeps the `DesignState` in memory for the request page. The PNG and design JSON are not uploaded to the backend, so the shop does not receive them after a reload.
 - There is no pricing, online payment, account system, or file upload. Customers submit details and an optional artwork link.
 - Requests and contact messages are stored in MongoDB. Configure backups and durable storage for real traffic.

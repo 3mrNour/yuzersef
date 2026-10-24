@@ -68,7 +68,8 @@ src/
 | `/` | Home |
 | `/request` | Request form |
 | `/track` | Order tracking |
-| `/studio` | Interactive mockup studio |
+| `/studio` | 3D mockup studio (Three.js, per-face print placement) |
+| `/studio/classic` | Canvas 2D mockup studio |
 | `/privacy` | Privacy policy |
 | `/terms` | Terms |
 | `*` | NotFoundPage |
@@ -103,7 +104,7 @@ The mobile header shows the language toggle inside the opened menu. From `sm` up
 
 ## Studio
 
-The studio is code-split: the home teaser renders a lightweight preview, and `/studio` lazy-loads the canvas editor.
+`/studio` now renders the 3D studio (see the section below). The Canvas 2D editor stays reachable at `/studio/classic` and remains code-split: the home teaser renders a lightweight preview.
 
 - `src/features/studio/types.ts` defines the product, transform, and design contracts.
 - `mockProducts.ts` contains three demo products: tee, mug, and cap.
@@ -117,9 +118,9 @@ The studio is code-split: the home teaser renders a lightweight preview, and `/s
 
 The studio does not change the backend contract. The PNG and raw `DesignState` are not uploaded or persisted. The request page displays the attached design from the in-memory draft, and a reload clears it.
 
-## 3D studio prototype (dev only)
+## 3D studio
 
-`/dev/studio-3d` lazy-loads `src/pages/DevStudio3D.tsx`: a Three.js / react-three-fiber prototype for print placement on a skinned tee. It exists to answer design questions for the real studio, nothing backend-facing.
+`/studio` (and `/dev/studio-3d`, kept for convenience) lazy-load `src/pages/DevStudio3D.tsx`: a Three.js / react-three-fiber prototype for print placement on a skinned tee. It is the main studio now, but remains a prototype: nothing backend-facing.
 
 - The tee is `public/models/shirt_baked.glb`, skinned with a vertex wind sway, and tinted to one of four shirt colours.
 - Placement runs in drape space, so sleeve and body orbits never tear the decal off the mesh.

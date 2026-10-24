@@ -5,7 +5,6 @@ import { DesignDraftProvider } from "./features/studio/DesignDraft";
 import { Home } from "./pages/Home";
 import { RequestPage } from "./pages/RequestPage";
 import { TrackPage } from "./pages/TrackPage";
-import { StudioPage } from "./pages/StudioPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
@@ -23,6 +22,11 @@ const DevStudio3D = lazy(async () => {
   return { default: module.DevStudio3D };
 });
 
+const ClassicStudio = lazy(async () => {
+  const module = await import("./pages/StudioPage");
+  return { default: module.StudioPage };
+});
+
 export function App() {
   return (
     <BrowserRouter>
@@ -35,7 +39,22 @@ export function App() {
             <Route index element={<Home />} />
             <Route path="request" element={<RequestPage />} />
             <Route path="track" element={<TrackPage />} />
-            <Route path="studio" element={<StudioPage />} />
+            <Route
+              path="studio"
+              element={
+                <Suspense fallback={null}>
+                  <DevStudio3D />
+                </Suspense>
+              }
+            />
+            <Route
+              path="studio/classic"
+              element={
+                <Suspense fallback={null}>
+                  <ClassicStudio />
+                </Suspense>
+              }
+            />
             <Route path="privacy" element={<PrivacyPage />} />
             <Route path="terms" element={<TermsPage />} />
             {import.meta.env.DEV ? (
