@@ -1,8 +1,13 @@
+import { lazy, Suspense } from "react";
 import { useLanguage } from "../providers/LanguageProvider";
-import { StudioSlot } from "../components/StudioSlot";
 import { ButtonLink } from "../components/ui/ButtonLink";
 import { CtaArrow } from "../components/ui/CtaArrow";
 import { Reveal } from "../components/ui/Reveal";
+
+const TeePreview3D = lazy(async () => {
+  const module = await import("../features/studio/TeePreview3D");
+  return { default: module.TeePreview3D };
+});
 
 export function StudioTeaser() {
   const { t } = useLanguage();
@@ -30,7 +35,11 @@ export function StudioTeaser() {
         </Reveal>
 
         <Reveal delay={0.12} className="mx-auto w-full max-w-[560px] lg:max-w-none">
-          <StudioSlot />
+          <Suspense fallback={null}>
+            <div className="h-[440px] overflow-hidden rounded-[26px] border border-bone/10 bg-gradient-to-b from-forest-950/70 to-forest-900/40 sm:h-[520px] lg:h-[600px]">
+              <TeePreview3D />
+            </div>
+          </Suspense>
         </Reveal>
       </div>
     </section>
