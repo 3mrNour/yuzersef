@@ -16,11 +16,6 @@ const DevPrintAreaPage = lazy(async () => {
   return { default: module.DevPrintAreaPage };
 });
 
-const DevStudio3D = lazy(async () => {
-  const module = await import("./pages/DevStudio3D");
-  return { default: module.DevStudio3D };
-});
-
 export function App() {
   return (
     <BrowserRouter>
@@ -40,16 +35,6 @@ export function App() {
                 element={
                   <Suspense fallback={null}>
                     <DevPrintAreaPage />
-                  </Suspense>
-                }
-              />
-            ) : null}
-            {import.meta.env.DEV ? (
-              <Route
-                path="dev/studio-3d"
-                element={
-                  <Suspense fallback={null}>
-                    <DevStudio3D />
                   </Suspense>
                 }
               />

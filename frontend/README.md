@@ -53,7 +53,6 @@ src/
 ├── features/studio/     mockup editor, canvas renderer, geometry, mock products
 ├── lib/                 API client, class helper, style helpers, validation
 ├── pages/               Home, Request, Track, Studio, Privacy, Terms, 404
-│                         plus DevStudio3D (dev-only 3D prototype)
 ├── providers/           LanguageProvider (lang, dir, copy, localStorage)
 ├── sections/            home page sections
 ├── App.tsx              routes, shell, design draft provider
@@ -73,7 +72,7 @@ src/
 | `/terms` | Terms |
 | `*` | NotFoundPage |
 
-`/dev/print-area` (print-area calibration) and `/dev/studio-3d` (3D prototype) exist only in development. Both are gated behind `import.meta.env.DEV` and fall through to the 404 page in production builds.
+`/dev/print-area` exists only in development for print-area calibration.
 
 Anchor links in the nav point to `/#services`, `/#work`, `/#process`, `/#contact`.
 
@@ -116,20 +115,6 @@ The studio is code-split: the home teaser renders a lightweight preview, and `/s
 - `DesignDraft.tsx` keeps the exported PNG and `DesignState` in memory for `/request`.
 
 The studio does not change the backend contract. The PNG and raw `DesignState` are not uploaded or persisted. The request page displays the attached design from the in-memory draft, and a reload clears it.
-
-## 3D studio prototype (dev only)
-
-`/dev/studio-3d` lazy-loads `src/pages/DevStudio3D.tsx`: a Three.js / react-three-fiber prototype for print placement on a skinned tee. It exists to answer design questions for the real studio, nothing backend-facing.
-
-- The tee is `public/models/shirt_baked.glb`, skinned with a vertex wind sway, and tinted to one of four shirt colours.
-- Placement runs in drape space, so sleeve and body orbits never tear the decal off the mesh.
-- Four print faces are independent: front, back, and both sleeves. Each has its own image upload, trash button, thumbnail, and placement status in the "جهات الطباعة" panel, with a live design counter.
-- Uploaded images auto-place on their face. Front and back use a deterministic "drone camera" raycast in the direction of the face; sleeves use geometry-anchor scanning (upper sleeve band, facing outward) so a mid-flight camera never misplaces them.
-- Designs can be dragged on the mesh, dragged across faces (ownership transfers, drop wins), scaled, rotated 90° steps, and resized in percent (display shows the decal height as a percentage of shirt height).
-- Export: `تنزيل المنظر الحالي` saves the current camera view as a PNG; `تنزيل ورقة كل الجهات` composes a branded 2×2 sheet of all four faces (logo header, Reem Kufi title, labelled cells, footer).
-- A dev hook `window.__ys3dComposeSheet` (import.meta.env.DEV only) returns the sheet PNG data URL for automation.
-
-Dependencies added to `frontend/package.json`: `three`, `@react-three/fiber`, `@react-three/drei`, and `@types/three` (devDependency). Three.js is in a lazy-loaded route, so the main bundle is unaffected. The glb is an educational-license placeholder: production needs a licensed, print-ready garment model, and the prototype keeps designs in memory only (not wired to `PrintPlacement` or the API yet).
 
 ## Design system
 
@@ -184,7 +169,6 @@ Regenerate with `npm run assets` from the root. Replace them with real brand fil
 - Vitest: 11 geometry tests pass.
 - Studio browser checks: product switcher, logo upload, canvas render, colour/view switching, PNG export, design handoff, service prefill, mobile layout, and the dev print-area route.
 - Production preview: `/studio` works, `/dev/print-area` falls through to the 404 page, and no console errors were recorded.
-- 3D prototype browser checks: per-face upload and auto-placement for front, back, and both sleeves; simultaneous multi-face designs; drag including back-face drag without spin; cross-face drag transfer; face removal; branded sheet export composition; typecheck and production build pass.
 - Request validation, request submission, tracking, contact submission, portfolio filters, FAQ, language toggle, and mobile menu were exercised manually.
 
 ## Known limitations
@@ -192,7 +176,6 @@ Regenerate with `npm run assets` from the root. Replace them with real brand fil
 - Studio products use generated SVG artwork, not real product photos.
 - The exported design is not uploaded or persisted. The request page preview is in memory and is lost on reload.
 - The editor uses Canvas 2D. The renderer interface leaves room for a future Three.js renderer.
-- The 3D prototype keeps designs in memory, uses a placeholder educational-license tee model, and is not wired to the request flow or backend yet.
 - Route-specific titles are not implemented. The title reflects the active language only.
 - The home page is long on mobile: about 14,000px at 360px wide, largely because the portfolio is single-column and the footer is tall.
 - No file uploads, payments, accounts, or admin screens.

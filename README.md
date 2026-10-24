@@ -7,7 +7,6 @@ This is a competition build. Portfolio artwork and the logo mark are placeholder
 ## Stack
 
 - **Frontend:** Vite, React 19, TypeScript, Tailwind CSS v4, Motion, React Router, Phosphor Icons
-- **3D prototyping (dev routes only):** Three.js r186, @react-three/fiber, @react-three/drei
 - **Backend:** Node.js, Express 5, Zod, MongoDB via Mongoose
 - **Fonts:** Reem Kufi (display), IBM Plex Sans Arabic (body), Space Grotesk (Latin labels)
 
@@ -16,22 +15,20 @@ This is a competition build. Portfolio artwork and the logo mark are placeholder
 ```
 .
 ├── frontend/
-│   │   │   ├── public/
-│   │   │   ├── brand/logo-mark.svg          # placeholder mark
-│   │   │   ├── portfolio/*.svg              # 10 placeholder product visuals
-│   │   │   ├── mock/*.svg                   # generated studio product artwork
-│   │   │   └── models/shirt_baked.glb       # placeholder 3D tee for the 3D prototype
-│   │   ├── src/
-│   │   │   ├── components/                  # layout, forms, gallery, header/footer
-│   │   │   │   ├── reactbits/               # RotatingText, SpotlightCard
-│   │   │   │   └── ui/                      # buttons, logo, reveal, demo tag
-│   │   │   ├── content/index.ts             # all Arabic and English copy
-│   │   │   ├── features/studio/             # mockup editor, canvas renderer, geometry
-│   │   │   ├── lib/                         # API client, validation, styles
-│   │   │   ├── pages/                       # home, request, track, studio, legal, 404
-│   │   │   ├── pages/DevStudio3D.tsx        # dev-only 3D print-placement prototype
-│   │   │   ├── providers/                   # language and RTL/LTR handling
-│   │   │   └── sections/                    # home page sections
+│   ├── public/
+│   │   ├── brand/logo-mark.svg          # placeholder mark
+│   │   ├── portfolio/*.svg              # 10 placeholder product visuals
+│   │   └── mock/*.svg                   # generated studio product artwork
+│   ├── src/
+│   │   ├── components/                  # layout, forms, gallery, header/footer
+│   │   │   ├── reactbits/               # RotatingText, SpotlightCard
+│   │   │   └── ui/                      # buttons, logo, reveal, demo tag
+│   │   ├── content/index.ts             # all Arabic and English copy
+│   │   ├── features/studio/             # mockup editor, canvas renderer, geometry
+│   │   ├── lib/                         # API client, validation, styles
+│   │   ├── pages/                       # home, request, track, studio, legal, 404
+│   │   ├── providers/                   # language and RTL/LTR handling
+│   │   └── sections/                    # home page sections
 │   └── vite.config.ts                   # dev proxy: /api -> localhost:8787
 ├── backend/
 │   ├── models/                          # MongoDB schemas
@@ -149,7 +146,7 @@ node ..\node_modules\tsx\dist\cli.mjs src\index.ts
 | `/terms` | Terms of use |
 | `*` | Arabic 404 page |
 
-`/dev/print-area` (print-area calibration) and `/dev/studio-3d` (3D print-placement prototype) are development-only pages. They are not registered in production builds.
+`/dev/print-area` is a development-only print-area calibration page. It is not registered in production builds.
 
 ## API
 
@@ -230,7 +227,6 @@ The studio product data lives in `frontend/src/features/studio/mockProducts.ts`.
 - The logo mark and all portfolio images are generated placeholders.
 - The social links for TikTok and Facebook are search URLs, not confirmed profile URLs.
 - The studio uses generated SVG product artwork, not photographed products. The preview, colours, and print areas are demo data.
-- The 3D prototype at `/dev/studio-3d` uses an educational-license placeholder tee model (`frontend/public/models/shirt_baked.glb`). Production needs a purchased, print-ready garment model with clean UV drape. The prototype is not wired to the backend and keeps its per-face designs in memory only.
 - The studio exports a 1200px PNG and keeps the `DesignState` in memory for the request page. The PNG and design JSON are not uploaded to the backend, so the shop does not receive them after a reload.
 - There is no pricing, online payment, account system, or file upload. Customers submit details and an optional artwork link.
 - Requests and contact messages are stored in MongoDB. Configure backups and durable storage for real traffic.
