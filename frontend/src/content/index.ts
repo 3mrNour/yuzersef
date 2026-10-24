@@ -169,6 +169,19 @@ export interface SiteCopy {
       artwork: string;
       artworkPlaceholder: string;
       artworkHint: string;
+      piecesTitle: string;
+      pieceLabel: string;
+      addPiece: string;
+      removePiece: string;
+      product: string;
+      size: string;
+      sizePlaceholder: string;
+      color: string;
+      style: string;
+      stylePlaceholder: string;
+      specialRequest: string;
+      specialRequestPlaceholder: string;
+      studioProductNote: string;
     };
     submit: string;
     submitting: string;
@@ -186,6 +199,9 @@ export interface SiteCopy {
       quantity: string;
       details: string;
       artwork: string;
+      pieces: string;
+      size: string;
+      specialRequest: string;
     };
   };
   track: {
@@ -195,7 +211,6 @@ export interface SiteCopy {
     codePlaceholder: string;
     submit: string;
     submitting: string;
-    demoHint: string;
     notFound: string;
     error: string;
     created: string;
@@ -216,6 +231,7 @@ export interface SiteCopy {
     productLabel: string;
     colorLabel: string;
     viewLabel: string;
+    turnLabel: string;
     logoLabel: string;
     upload: string;
     replace: string;
@@ -564,6 +580,19 @@ export const copy: Record<Lang, SiteCopy> = {
         artwork: "لينك التصميم (اختياري)",
         artworkPlaceholder: "https://...",
         artworkHint: "لينك Google Drive أو أي رابط مباشر للملف.",
+        piecesTitle: "قطع الطلب",
+        pieceLabel: "قطعة",
+        addPiece: "إضافة قطعة",
+        removePiece: "حذف القطعة",
+        product: "المنتج",
+        size: "المقاس",
+        sizePlaceholder: "اختار المقاس",
+        color: "اللون",
+        style: "الستايل أو الخامة",
+        stylePlaceholder: "مثال: Classic / Oversized",
+        specialRequest: "طلب خاص للقطعة",
+        specialRequestPlaceholder: "مكان الطباعة أو أي ملاحظة خاصة...",
+        studioProductNote: "المنتج والتصميم اتحددوا من الـ Studio.",
       },
       submit: "ابعت الطلب",
       submitting: "بنبعت الطلب...",
@@ -580,6 +609,9 @@ export const copy: Record<Lang, SiteCopy> = {
         service: "اختار الخدمة.",
         quantity: "الكمية من 1 لـ 500.",
         details: "اكتب تفاصيل المنتج.",
+        pieces: "أكمل تفاصيل كل قطعة.",
+        size: "اختار مقاس كل قطعة.",
+        specialRequest: "راجع الطلب الخاص بهذه القطعة.",
         artwork: "لو حطيت لينك، لازم يبدأ بـ http أو https.",
       },
     },
@@ -590,7 +622,6 @@ export const copy: Record<Lang, SiteCopy> = {
       codePlaceholder: "YZ-0000-XXXX",
       submit: "تابع",
       submitting: "بندور...",
-      demoHint: "للتجربة، استخدم الكود YZ-DEMO-0001.",
       notFound: "مفيش طلب بالكود ده. اتأكد من الكود وجرب تاني.",
       error: "مش قادرين نجيب حالة الطلب دلوقتي.",
       created: "تاريخ الإرسال",
@@ -616,6 +647,7 @@ export const copy: Record<Lang, SiteCopy> = {
       productLabel: "المنتج",
       colorLabel: "اللون",
       viewLabel: "المعاينة",
+      turnLabel: "لف المنتج 180°",
       logoLabel: "اللوجو",
       upload: "ارفع لوجو",
       replace: "غيّر اللوجو",
@@ -923,6 +955,19 @@ export const copy: Record<Lang, SiteCopy> = {
         artwork: "Design link (optional)",
         artworkPlaceholder: "https://...",
         artworkHint: "A Google Drive link or any direct file link.",
+        piecesTitle: "Request pieces",
+        pieceLabel: "Piece",
+        addPiece: "Add another piece",
+        removePiece: "Remove piece",
+        product: "Product",
+        size: "Size",
+        sizePlaceholder: "Choose a size",
+        color: "Colour",
+        style: "Style or fabric",
+        stylePlaceholder: "e.g. Classic / Oversized",
+        specialRequest: "Special request for this piece",
+        specialRequestPlaceholder: "Print placement or any special note...",
+        studioProductNote: "The product and design were selected in the Studio.",
       },
       submit: "Send request",
       submitting: "Sending request...",
@@ -939,6 +984,9 @@ export const copy: Record<Lang, SiteCopy> = {
         service: "Choose a service.",
         quantity: "Quantity must be from 1 to 500.",
         details: "Add the product details.",
+        pieces: "Complete the details for every piece.",
+        size: "Choose a size for every piece.",
+        specialRequest: "Review the special request for this piece.",
         artwork: "If provided, the link must start with http or https.",
       },
     },
@@ -949,7 +997,6 @@ export const copy: Record<Lang, SiteCopy> = {
       codePlaceholder: "YZ-0000-XXXX",
       submit: "Track",
       submitting: "Looking...",
-      demoHint: "For a demo, use the code YZ-DEMO-0001.",
       notFound: "No request matches that code. Check it and try again.",
       error: "We could not load the request status right now.",
       created: "Sent on",
@@ -975,6 +1022,7 @@ export const copy: Record<Lang, SiteCopy> = {
       productLabel: "Product",
       colorLabel: "Colour",
       viewLabel: "View",
+      turnLabel: "3D turn 180°",
       logoLabel: "Logo",
       upload: "Upload logo",
       replace: "Replace logo",

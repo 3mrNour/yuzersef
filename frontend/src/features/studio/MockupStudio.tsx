@@ -40,6 +40,7 @@ import {
 } from "./imageCache";
 import { renderMockup, renderMockupToBlob } from "./renderMockup";
 import type { DesignState, DesignTransform, Product } from "./types";
+import { fetchPrintPlacementSettings, type PrintPlacement } from "../../lib/api";
 
 export interface MockupExport {
   blob: Blob;
@@ -65,6 +66,7 @@ interface LogoAsset {
   img: HTMLImageElement;
   url: string;
   name: string;
+  dataUrl: string;
 }
 
 type Gesture =
@@ -110,7 +112,7 @@ export const MockupStudio = forwardRef<MockupStudioHandle, MockupStudioProps>(
     },
     ref,
   ) {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
     const [colorId, setColorId] = useState(() =>
       chooseInitialId(
         product.colors.map((color) => color.id),
@@ -123,6 +125,10 @@ export const MockupStudio = forwardRef<MockupStudioHandle, MockupStudioProps>(
         initialViewId,
       ),
     );
+    const [turnAngle, setTurnAngle] = useState(0);
+    const [styleId, setStyleId] = useState(product.options?.styles?.[0] ?? "");
+    const [printPlacement, setPrintPlacement] = useState<PrintPlacement>("front");
+    const [availablePlacements, setAvailablePlacements] = useState<PrintPlacement[]>(["front"]);
     const [transform, setTransform] = useState<DesignTransform>({
       x: 0.5,
       y: 0.5,
@@ -187,10 +193,13 @@ export const MockupStudio = forwardRef<MockupStudioHandle, MockupStudioProps>(
         productId: product._id,
         colorId: color.id,
         viewId: view.id,
+        ...(styleId ? { styleId } : {}),
         ...(logo ? { logoFileName: logo.name } : {}),
+        ...(logo ? { logoDataUrl: logo.dataUrl } : {}),
+        printPlacement,
         transform,
       }),
-      [product._id, color.id, view.id, logo, transform],
+      [product._id, color.id, view.id, styleId, logo, printPlacement, transform],
     );
 
     const markActive = useCallback(() => {
@@ -198,6 +207,22 @@ export const MockupStudio = forwardRef<MockupStudioHandle, MockupStudioProps>(
       if (idleTimer.current) window.clearTimeout(idleTimer.current);
       idleTimer.current = window.setTimeout(() => setGuideActive(false), 1500);
     }, []);
+
+    useEffect(() => {
+      let active = true;
+      void fetchPrintPlacementSettings().then((settings) => {
+        if (!active) return;
+        const profile = settings.profiles[product._id];
+        const next = profile?.placements ?? settings.placements[product.category as keyof typeof settings.placements] ?? ["front"];
+        setAvailablePlacements(next);
+        setPrintPlacement((current) => next.includes(current) ? current : next[0]);
+      }).catch(() => {
+        if (active) setAvailablePlacements(["front"]);
+      });
+      return () => {
+        active = false;
+      };
+    }, [product]);
 
     useEffect(() => {
       markActive();
@@ -253,7 +278,10 @@ export const MockupStudio = forwardRef<MockupStudioHandle, MockupStudioProps>(
       if (!product.views.some((item) => item.id === viewId)) {
         setViewId(product.views[0].id);
       }
-    }, [product, colorId, viewId]);
+      if (product.options?.styles && !product.options.styles.includes(styleId)) {
+        setStyleId(product.options.styles[0] ?? "");
+      }
+    }, [product, colorId, viewId, styleId]);
 
     useEffect(() => {
       setTransform((current) => clampTransform(current, logoAspect, logicPrintArea));
@@ -347,6 +375,20 @@ export const MockupStudio = forwardRef<MockupStudioHandle, MockupStudioProps>(
       [logoAspect, logicPrintArea, markActive],
     );
 
+    function selectPrintPlacement(placement: PrintPlacement) {
+      setPrintPlacement(placement);
+      const positionByPlacement: Record<PrintPlacement, { x: number; y: number }> = {
+        front: { x: 0.5, y: 0.5 },
+        back: { x: 0.5, y: 0.5 },
+        "left-sleeve": { x: 0.35, y: 0.42 },
+        "right-sleeve": { x: 0.65, y: 0.42 },
+        custom: { x: 0.5, y: 0.6 },
+      };
+      const position = positionByPlacement[placement];
+      setTransform((current) => clampTransform({ ...current, ...position }, logoAspect, logicPrintArea));
+      markActive();
+    }
+
     function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
       const file = event.target.files?.[0];
       event.target.value = "";
@@ -370,7 +412,13 @@ export const MockupStudio = forwardRef<MockupStudioHandle, MockupStudioProps>(
         if (logoUrl.current) URL.revokeObjectURL(logoUrl.current);
         logoUrl.current = url;
         const nextAspect = image.naturalHeight / image.naturalWidth;
-        setLogo({ img: image, url, name: file.name });
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === "string") {
+            setLogo({ img: image, url, name: file.name, dataUrl: reader.result });
+          }
+        };
+        reader.readAsDataURL(file);
         setTransform(getDefaultTransform(nextAspect, logicPrintArea));
         setRenderError(false);
         markActive();
@@ -621,32 +669,40 @@ export const MockupStudio = forwardRef<MockupStudioHandle, MockupStudioProps>(
 
             <div className="relative bg-forest-950/45 p-3 sm:p-5">
               <div className="relative mx-auto w-full max-w-[640px]">
-                <canvas
-                  ref={canvasRef}
-                  width={900}
-                  height={1100}
-                  tabIndex={0}
-                  role="application"
-                  aria-label={t.studioUi.previewAlt}
-                  aria-describedby={hintId}
-                  onPointerDown={handlePointerDown}
-                  onPointerMove={handlePointerMove}
-                  onPointerUp={finishPointer}
-                  onPointerCancel={finishPointer}
-                  onLostPointerCapture={(event) => {
-                    pointers.current.delete(event.pointerId);
-                    if (pointers.current.size === 0) {
-                      gesture.current = null;
-                      setDragging(false);
-                    }
+                <div
+                  className="relative transition-transform duration-500 [transform-style:preserve-3d]"
+                  style={{
+                    perspective: "1000px",
+                    transform: `rotateY(${turnAngle}deg)`,
                   }}
-                  onKeyDown={handleKeyDown}
-                  style={{ aspectRatio: aspect }}
-                  className={cn(
-                    "block w-full touch-none select-none rounded-[1.35rem] border border-bone/10",
-                    logo ? (dragging ? "cursor-grabbing" : "cursor-grab") : "cursor-default",
-                  )}
-                />
+                >
+                  <canvas
+                    ref={canvasRef}
+                    width={900}
+                    height={1100}
+                    tabIndex={0}
+                    role="application"
+                    aria-label={t.studioUi.previewAlt}
+                    aria-describedby={hintId}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={finishPointer}
+                    onPointerCancel={finishPointer}
+                    onLostPointerCapture={(event) => {
+                      pointers.current.delete(event.pointerId);
+                      if (pointers.current.size === 0) {
+                        gesture.current = null;
+                        setDragging(false);
+                      }
+                    }}
+                    onKeyDown={handleKeyDown}
+                    style={{ aspectRatio: aspect }}
+                    className={cn(
+                      "block w-full touch-none select-none rounded-[1.35rem] border border-bone/10",
+                      logo ? (dragging ? "cursor-grabbing" : "cursor-grab") : "cursor-default",
+                    )}
+                  />
+                </div>
 
                 {!logo && assetState === "ready" && !renderError ? (
                   <div className="pointer-events-none absolute inset-0 grid place-items-center p-5">
@@ -765,6 +821,35 @@ export const MockupStudio = forwardRef<MockupStudioHandle, MockupStudioProps>(
             ) : null}
           </section>
 
+          {product.options?.styles?.length ? (
+            <section className="border-t border-bone/10 pt-5">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-bone/45">
+                {t.request.fields.style}
+              </h2>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {product.options.styles.map((style) => (
+                  <button
+                    key={style}
+                    type="button"
+                    aria-pressed={style === styleId}
+                    onClick={() => {
+                      setStyleId(style);
+                      markActive();
+                    }}
+                    className={cn(
+                      "min-h-[40px] rounded-full border px-4 text-sm transition-colors",
+                      style === styleId
+                        ? "border-sand bg-sand text-forest-950"
+                        : "border-bone/25 bg-forest-900/40 text-bone/75 hover:border-sand/60 hover:text-sand",
+                    )}
+                  >
+                    {style}
+                  </button>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
           <section className="border-t border-bone/10 pt-5">
             <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-bone/45">
               {t.studioUi.colorLabel}
@@ -811,6 +896,7 @@ export const MockupStudio = forwardRef<MockupStudioHandle, MockupStudioProps>(
                     aria-pressed={item.id === view.id}
                     onClick={() => {
                       setViewId(item.id);
+                      setTurnAngle(product.views.indexOf(item) === 0 ? 0 : 180);
                       markActive();
                     }}
                     className={cn(
@@ -824,8 +910,64 @@ export const MockupStudio = forwardRef<MockupStudioHandle, MockupStudioProps>(
                   </button>
                 ))}
               </div>
+              <label className="mt-4 block">
+                <span className="flex items-center justify-between gap-3 text-sm text-bone/75">
+                  <span>{t.studioUi.turnLabel}</span>
+                  <span className="font-latin text-xs text-sand/80">{turnAngle}°</span>
+                </span>
+                <input
+                  type="range"
+                  min={0}
+                  max={180}
+                  step={1}
+                  value={turnAngle}
+                  onChange={(event) => {
+                    const angle = Number(event.target.value);
+                    setTurnAngle(angle);
+                    if (product.views.length > 1) {
+                      setViewId(product.views[angle >= 90 ? 1 : 0].id);
+                    }
+                    markActive();
+                  }}
+                  className="mt-2 w-full accent-sand"
+                  aria-label={t.studioUi.turnLabel}
+                />
+              </label>
             </section>
           ) : null}
+
+          <section className="border-t border-bone/10 pt-5">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-bone/45">
+              {lang === "ar" ? "موضع الطباعة" : "Print placement"}
+            </h2>
+            <p className="mt-2 text-xs leading-relaxed text-bone/55">
+              {lang === "ar" ? "اختر موضعًا متاحًا لهذا المنتج فقط. الخيارات يحددها فريق الإدارة." : "Choose a position available for this product. Options are controlled by the admin."}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {availablePlacements.map((placement) => (
+                <button
+                  key={placement}
+                  type="button"
+                  aria-pressed={printPlacement === placement}
+                  onClick={() => selectPrintPlacement(placement)}
+                  className={cn(
+                    "min-h-[40px] rounded-full border px-4 text-sm transition-colors",
+                    printPlacement === placement
+                      ? "border-sand bg-sand text-forest-950"
+                      : "border-bone/20 text-bone/65 hover:border-bone/40 hover:text-bone",
+                  )}
+                >
+                  {{
+                    front: lang === "ar" ? "الأمام" : "Front",
+                    back: lang === "ar" ? "الخلف" : "Back",
+                    "left-sleeve": lang === "ar" ? "الكم الأيسر" : "Left sleeve",
+                    "right-sleeve": lang === "ar" ? "الكم الأيمن" : "Right sleeve",
+                    custom: lang === "ar" ? "موضع مخصص" : "Custom placement",
+                  }[placement]}
+                </button>
+              ))}
+            </div>
+          </section>
 
           <section className="border-t border-bone/10 pt-5">
             <div className="flex items-center justify-between gap-3">

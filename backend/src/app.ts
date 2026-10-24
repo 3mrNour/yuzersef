@@ -4,6 +4,7 @@ import { ZodError } from "zod";
 import { createAdminRouter } from "./routes/admin.js";
 import { contactRouter } from "./routes/contact.js";
 import { requestsRouter } from "./routes/requests.js";
+import { defaultPrintPlacementProfiles, defaultPrintPlacementSettings, PrintSettingsModel } from "./models/PrintSettings.js";
 
 const SERVICE_LABELS = [
   { slug: "clothing", ar: "ملابس مطبوعة", en: "Printed clothing" },
@@ -53,7 +54,7 @@ export function createApp() {
       origin: allowedOrigins.length > 0 ? allowedOrigins : true,
     }),
   );
-  app.use(express.json({ limit: "32kb" }));
+  app.use(express.json({ limit: "12mb" }));
 
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, service: "yuzersef-api", time: new Date().toISOString() });
@@ -61,6 +62,15 @@ export function createApp() {
 
   app.get("/api/services", (_req, res) => {
     res.json({ services: SERVICE_LABELS });
+  });
+
+  app.get("/api/settings/print-placements", async (_req, res) => {
+    const settings = await PrintSettingsModel.findOneAndUpdate(
+      { key: "default" },
+      { $setOnInsert: { key: "default", placements: defaultPrintPlacementSettings, profiles: defaultPrintPlacementProfiles } },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    ).lean({ flattenMaps: true }).exec();
+    res.json({ placements: settings?.placements ?? defaultPrintPlacementSettings, profiles: settings?.profiles ?? defaultPrintPlacementProfiles });
   });
 
   app.use("/api/requests", rateLimit(10, 10 * 60 * 1000), requestsRouter);

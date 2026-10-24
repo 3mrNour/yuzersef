@@ -89,8 +89,25 @@ Creates a print request and returns a tracking code.
   "name": "Ahmed",
   "phone": "01012345678",
   "service": "clothing",
-  "quantity": 12,
-  "details": "Black tees with a chest print",
+  "quantity": 2,
+  "items": [
+    {
+      "productId": "tee-classic",
+      "productName": "Classic Tee",
+      "size": "M",
+      "color": "Bone",
+      "style": "Classic",
+      "specialRequest": "Small chest print"
+    },
+    {
+      "productId": "tee-classic",
+      "productName": "Classic Tee",
+      "size": "L",
+      "color": "Forest",
+      "style": "Oversized",
+      "specialRequest": "Large back print"
+    }
+  ],
   "artworkUrl": "https://example.com/artwork.pdf"
 }
 ```
@@ -112,13 +129,27 @@ Rules:
 - `phone`: Egyptian mobile number, Arabic and Persian digits normalized
 - `service`: `clothing`, `mugs`, `caps`, `stickers`, or `cases`
 - `quantity`: integer from 1 to 500
-- `details`: up to 1200 characters
+- `items`: one entry per physical piece; its length must equal `quantity`
+- `items[].size`: selected size for that piece
+- `items[].color`: selected colour for that piece
+- `items[].style`: style or fabric for that piece
+- `items[].specialRequest`: optional placement or production note for that piece
 - `artworkUrl`: optional `http(s)` link, up to 500 characters
+- `designPreviewUrl`: optional exported Studio image stored as an image data URL for Admin review
+- `designFileName`: original uploaded logo filename
+- `logoDataUrl`: the original uploaded logo, stored separately from the composed Studio preview
+- `items[].printPlacement`: selected production position (`front`, `back`, `left-sleeve`, `right-sleeve`, or `custom`)
 - Rate limit: 10 requests per IP per 10 minutes
+
+The Studio and customer-facing request form read product-specific print profiles from
+`GET /api/settings/print-placements`. For example, sleeve positions are
+available for the Classic Tee but not for the Classic Mug. Requests using a
+position disabled for that exact product are rejected, and a product cannot be
+submitted under a different service category.
 
 ### `GET /api/requests/:code`
 
-Returns the public tracking fields for a code: status, service, quantity, and creation date.
+Returns the public tracking fields for a code: status, service, quantity, item details, and creation date.
 
 - Invalid code length: `400`
 - Unknown code: `404`
@@ -146,37 +177,35 @@ Admin routes require the `x-admin-api-key` header to match `ADMIN_API_KEY`. They
 
 ```text
 GET   /api/admin/requests?page=1&limit=25
+GET   /api/admin/requests?page=1&limit=25&status=review
+GET   /api/admin/summary
 PATCH /api/admin/requests/:id/status
+GET   /api/admin/print-settings
+PATCH /api/admin/print-settings
 GET   /api/admin/contacts?page=1&limit=25
 ```
 
-The list endpoints return `{ items, page, limit, total, pages }`. The status endpoint accepts
-`{ "status": "received" | "review" | "confirmed" | "closed" }`.
+The dashboard is available at `/admin` and stores the admin key only in the browser session. The list endpoints return `{ items, page, limit, total, pages }`. The status endpoint accepts
+`{ "status": "received" | "review" | "confirmed" | "closed" }`. Print settings use `{ "placements": { "clothing": ["front", "back"] }, "profiles": { "mug-classic": { "productId": "mug-classic", "service": "mugs", "productName": "Classic Mug", "placements": ["front"], "guidance": "Front panel only." } } }`.
 
 ## MongoDB structure
 
-- `src/db.ts` connects to MongoDB and inserts the demo request if it does not exist.
+- `src/db.ts` connects to MongoDB before the API starts.
 - `src/models/PrintRequest.ts` defines the print request schema and indexes.
 - `src/models/ContactMessage.ts` defines the contact message schema and indexes.
+- `src/models/PrintSettings.ts` stores the Admin-controlled print-position rules.
 - `src/routes/requests.ts` handles request creation and tracking.
 - `src/routes/contact.ts` handles contact message creation.
 
 The `PrintRequest` collection has unique indexes for `id` and `code`. The `ContactMessage` collection has a unique index for `id`. Both collections store ISO timestamp strings to preserve the existing API shape.
 
-## Demo tracking
-
-Use `YZ-DEMO-0001` in `/track` or call:
-
-```bash
-curl http://localhost:8787/api/requests/YZ-DEMO-0001
-```
-
 ## Security and production notes
 
 - Rate limiting is in memory and resets on restart.
-- There is no authentication, admin API, or request listing endpoint.
+- The Admin API is protected by `ADMIN_API_KEY`; rotate it if it has been shared.
 - Contact details and request details are stored in MongoDB. Add access control and retention rules before public use.
 - Set `ALLOWED_ORIGINS` and serve the API behind HTTPS.
 - Configure MongoDB backups and durable storage for production.
-- The API does not upload or host artwork. It stores an optional link.
+- Studio previews are stored in the request document as image data URLs; keep the
+  request body and MongoDB document limits aligned with the chosen export size.
 - Add automated tests and structured logging before relying on this in production.

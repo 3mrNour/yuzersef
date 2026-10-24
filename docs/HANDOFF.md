@@ -13,7 +13,7 @@ The site is functionally complete for a competition build.
 - Arabic-first RTL marketing site with an English toggle
 - Services, portfolio, process, about, FAQ, and contact on the home page
 - Request form with validation and a generated tracking code
-- Order tracking with a demo code
+- Order tracking with generated request codes
 - Interactive mockup studio with logo upload, canvas preview, PNG export, and request handoff
 - Privacy, terms, and 404 pages
 - Express API with MongoDB persistence, validation, and in-memory rate limiting
@@ -58,7 +58,7 @@ Build, typechecks, tests, and production preview pass. Core flows were exercised
 - `DesignDraft.tsx` keeps the exported PNG and `DesignState` in memory.
 - The studio CTA exports the PNG, stores the draft, and navigates to `/request?service=...` when the product category maps to a service.
 - `RequestPage` shows the attached design, product, colour, view, and logo name, with actions to try another design or remove it.
-- The design is not uploaded or persisted. Reloading the request page clears it. The API still receives only the normal request fields.
+- The exported Studio preview is converted to an image data URL during request submission and persisted on the print request with the uploaded logo filename. The Admin detail panel can preview and download it.
 - `PrintAreaEditor.tsx` is shared by the studio and the dev-only calibration page; it has no `LanguageProvider` dependency.
 
 ### Backend
@@ -70,8 +70,10 @@ Build, typechecks, tests, and production preview pass. Core flows were exercised
 - Contact message storage
 - In-memory rate limiting per IP
 - Mongoose models for requests and contact messages
-- Seed request with code `YZ-DEMO-0001`
 - Protected admin API for reviewing requests and contact messages
+- Admin dashboard at `/admin` with session-only key access, summaries, pagination, filtering, and status updates
+- Admin-controlled print-position settings per service, consumed by the customer request form
+- Per-item print placement and saved Studio preview metadata for production review
 - Backend validation and admin authorization tests
 - Health and services endpoints
 
@@ -187,7 +189,7 @@ The mobile page is long. This is a design choice, not a bug. See remaining work 
 5. Automated tests cover geometry only. API, request, tracking, contact, language, and UI flows are still manual.
 6. MongoDB persistence is configured, but production backups and retention rules still need to be established.
 7. Rate limiting is in memory and resets on restart.
-8. There is no admin UI. The protected admin API lists requests/contact messages and updates request status.
+8. The `/admin` UI uses the protected admin API to review requests/contact messages and update request status.
 9. Per-route titles and social metadata are not implemented. The title depends on language, not page.
 10. There is no OG image. The Twitter card is `summary`.
 11. The production bundle is about 560 kB minified. The home route still ships the request/track/studio preview code. Further route-level splitting would reduce the initial payload.
@@ -206,7 +208,7 @@ Priority order:
    - Keep the current client-only demo and state the limitation clearly in the UI.
    Any backend change needs a storage plan, file limits, and cleanup policy.
 4. Replace studio mock products with photographed products and recalibrate print areas in `/dev/print-area`.
-5. Add an admin path for reviewing requests and contact messages, or forward submissions to email/CRM.
+5. Add email/CRM forwarding and richer operational tools if the admin workflow needs them.
 6. Configure MongoDB backups and a retention policy.
 7. Expand automated tests:
    - Studio geometry is covered; add image/export behavior and request handoff
@@ -253,7 +255,7 @@ Priority order:
 | `frontend/src/providers/LanguageProvider.tsx` | Language, direction, metadata |
 | `frontend/src/lib/api.ts` | API client |
 | `backend/src/app.ts` | App setup and rate limits |
-| `backend/src/db.ts` | MongoDB connection and demo request seed |
+| `backend/src/db.ts` | MongoDB connection |
 | `backend/src/models/PrintRequest.ts` | Print request schema |
 | `backend/src/models/ContactMessage.ts` | Contact message schema |
 | `backend/src/routes/requests.ts` | Request creation and tracking routes |
@@ -264,7 +266,7 @@ Priority order:
 
 ## Local reset
 
-To reset requests and contact messages, stop the API and remove the documents from the `PrintRequest` and `ContactMessage` collections in MongoDB. On the next API start, the demo request `YZ-DEMO-0001` is recreated if it is missing.
+To reset requests and contact messages, stop the API and remove the documents from the `PrintRequest` and `ContactMessage` collections in MongoDB.
 
 ## Repository
 

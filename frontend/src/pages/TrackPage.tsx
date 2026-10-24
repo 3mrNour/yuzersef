@@ -4,7 +4,7 @@ import {
   WarningCircle,
   WhatsappLogo,
 } from "@phosphor-icons/react";
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { PageHeader } from "../components/PageHeader";
 import { TrackStatus } from "../components/TrackStatus";
@@ -22,8 +22,6 @@ type LookupState =
   | { kind: "error" };
 
 const STATUS_ORDER: RequestStatus[] = ["received", "review", "confirmed", "closed"];
-const DEMO_CODE = "YZ-DEMO-0001";
-
 export function TrackPage() {
   const { t, lang } = useLanguage();
   const [params, setParams] = useSearchParams();
@@ -32,11 +30,15 @@ export function TrackPage() {
   const [state, setState] = useState<LookupState>(
     initialCode ? { kind: "loading" } : { kind: "idle" },
   );
+  const autoLookupCode = useRef(initialCode);
 
   const lookup = useCallback(
     async (raw: string) => {
       const next = raw.trim().toUpperCase();
-      if (!next) return;
+      if (!next) {
+        setState({ kind: "idle" });
+        return;
+      }
       setCode(next);
       setState({ kind: "loading" });
       setParams({ code: next }, { replace: true });
@@ -56,8 +58,11 @@ export function TrackPage() {
   );
 
   useEffect(() => {
-    if (initialCode) void lookup(initialCode);
-  }, [initialCode, lookup]);
+    if (autoLookupCode.current) {
+      void lookup(autoLookupCode.current);
+      autoLookupCode.current = "";
+    }
+  }, [lookup]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -117,13 +122,6 @@ export function TrackPage() {
               </button>
             </div>
 
-            <button
-              type="button"
-              onClick={() => void lookup(DEMO_CODE)}
-              className="mt-3 text-start text-xs text-bone/45 underline decoration-bone/25 underline-offset-4 transition-colors hover:text-sand"
-            >
-              {t.track.demoHint}
-            </button>
           </form>
 
           <div aria-live="polite" className="mt-6">
@@ -200,6 +198,32 @@ export function TrackPage() {
                 </div>
               </dl>
 
+              {state.data.items.length ? (
+                <div className="mt-6 space-y-3">
+                  {state.data.items.map((item, index) => (
+                    <div
+                      key={`${item.productId}-${index}`}
+                      className="rounded-[var(--radius-field)] border border-bone/10 bg-forest-950/45 p-4"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-sm font-semibold text-bone">
+                          {item.productName}
+                        </p>
+                        <span className="text-xs text-sand">
+                          {item.size} / {item.color}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-bone/55">{item.style}</p>
+                      {item.specialRequest ? (
+                        <p className="mt-2 text-xs leading-relaxed text-bone/70">
+                          {item.specialRequest}
+                        </p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
               <TrackStatus
                 status={state.data.status}
                 order={STATUS_ORDER}
@@ -212,4 +236,3 @@ export function TrackPage() {
     </>
   );
 }
-

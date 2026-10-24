@@ -4,14 +4,27 @@ import { randomUUID } from "node:crypto";
 import { PrintRequestModel, toPrintRequest } from "../models/PrintRequest.js";
 import { createCode, SERVICE_SLUGS } from "../types.js";
 import { phoneSchema } from "../validation.js";
+import { defaultPrintPlacementProfiles, defaultPrintPlacementSettings, PrintSettingsModel } from "../models/PrintSettings.js";
 
-export const requestSchema = z.object({
-  name: z.string().trim().min(2).max(80),
-  phone: phoneSchema,
-  service: z.enum(SERVICE_SLUGS),
-  quantity: z.coerce.number().int().min(1).max(500),
-  details: z.string().trim().max(1200).default(""),
-  artworkUrl: z
+export const requestSchema = z
+  .object({
+    name: z.string().trim().min(2).max(80),
+    phone: phoneSchema,
+    service: z.enum(SERVICE_SLUGS),
+    quantity: z.coerce.number().int().min(1).max(500),
+    items: z.array(
+      z.object({
+        productId: z.string().trim().min(1).max(80),
+        productName: z.string().trim().min(1).max(120),
+        size: z.string().trim().min(1).max(20),
+        color: z.string().trim().min(1).max(60),
+        style: z.string().trim().min(1).max(120),
+        specialRequest: z.string().trim().max(500).default(""),
+        printPlacement: z.enum(["front", "back", "left-sleeve", "right-sleeve", "custom"]).default("front"),
+      }),
+    ).min(1).max(500),
+    details: z.string().trim().max(1200).default(""),
+    artworkUrl: z
     .string()
     .trim()
     .max(500)
@@ -20,12 +33,43 @@ export const requestSchema = z.object({
     })
     .optional()
     .default(""),
-});
+    designPreviewUrl: z.string().max(8_000_000).refine((value) => value.startsWith("data:image/"), {
+      message: "designPreviewUrl must be an image data URL",
+    }).optional(),
+    designFileName: z.string().trim().max(200).optional(),
+    logoDataUrl: z.string().max(7_000_000).refine((value) => value.startsWith("data:image/"), {
+      message: "logoDataUrl must be an image data URL",
+    }).optional(),
+  })
+  .superRefine((value, context) => {
+    if (value.items.length !== value.quantity) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["items"],
+        message: "quantity must match the number of items",
+      });
+    }
+  });
 
 export const requestsRouter = Router();
 
 requestsRouter.post("/", async (req, res) => {
   const input = requestSchema.parse(req.body);
+  const settings = await PrintSettingsModel.findOne({ key: "default" }).lean({ flattenMaps: true }).exec();
+  const placements = (settings?.placements ?? defaultPrintPlacementSettings) as Record<string, string[]>;
+  const profiles = (settings?.profiles ?? defaultPrintPlacementProfiles) as Record<string, { service: string; placements: string[] }>;
+  for (const [index, item] of input.items.entries()) {
+    const profile = profiles[item.productId];
+    if (profile && profile.service !== input.service) {
+      res.status(400).json({ error: "product_service_mismatch", itemIndex: index });
+      return;
+    }
+    const allowed = profile?.placements ?? placements[input.service] ?? defaultPrintPlacementSettings[input.service];
+    if (!allowed.includes(item.printPlacement)) {
+      res.status(400).json({ error: "placement_not_available", itemIndex: index });
+      return;
+    }
+  }
   let created;
 
   for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -72,6 +116,7 @@ requestsRouter.get("/:code", async (req, res) => {
     status: publicRequest.status,
     service: publicRequest.service,
     quantity: publicRequest.quantity,
+    items: publicRequest.items,
     createdAt: publicRequest.createdAt,
   });
 });

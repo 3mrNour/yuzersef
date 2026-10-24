@@ -35,7 +35,7 @@ This is a competition build. Portfolio artwork and the logo mark are placeholder
 │   ├── routes/                          # API route modules
 │   └── src/
 │       ├── app.ts                       # app setup and rate limiting
-│       ├── db.ts                        # MongoDB connection and demo seed
+│       ├── db.ts                        # MongoDB connection
 │       ├── index.ts                     # server entry
 │       └── types.ts
 └── scripts/
@@ -140,7 +140,7 @@ node ..\node_modules\tsx\dist\cli.mjs src\index.ts
 | --- | --- |
 | `/` | Home: hero, services, studio teaser, process, portfolio, about, FAQ, contact |
 | `/request` | Request form, optional `?service=clothing` prefill |
-| `/track` | Order tracking, optional `?code=YZ-DEMO-0001` lookup |
+| `/track` | Order tracking by a real request code |
 | `/studio` | Interactive mockup studio with PNG export and request handoff |
 | `/privacy` | Privacy policy |
 | `/terms` | Terms of use |
@@ -158,7 +158,10 @@ GET  /api/requests/:code   Look up a request by code
 POST /api/contact          Send a contact message
 GET  /api/admin/requests   List requests (requires `x-admin-api-key`)
 GET  /api/admin/contacts   List contact messages (requires `x-admin-api-key`)
+GET  /api/admin/summary    Dashboard totals (requires `x-admin-api-key`)
 ```
+
+The protected admin dashboard is available at `/admin`. It keeps the admin key in `sessionStorage`, lists requests and contact messages, and allows request status updates.
 
 Create a request:
 
@@ -169,8 +172,17 @@ curl -X POST http://localhost:8787/api/requests \
     "name": "Ahmed",
     "phone": "01012345678",
     "service": "clothing",
-    "quantity": 12,
-    "details": "Black tees with a chest print",
+    "quantity": 1,
+    "items": [
+      {
+        "productId": "tee-classic",
+        "productName": "Classic Tee",
+        "size": "M",
+        "color": "Bone",
+        "style": "Classic",
+        "specialRequest": "Small chest print"
+      }
+    ],
     "artworkUrl": "https://example.com/artwork.pdf"
   }'
 ```
@@ -219,7 +231,6 @@ The studio product data lives in `frontend/src/features/studio/mockProducts.ts`.
 - There is no pricing, online payment, account system, or file upload. Customers submit details and an optional artwork link.
 - Requests and contact messages are stored in MongoDB. Configure backups and durable storage for real traffic.
 - Rate limiting is per-process and resets when the API restarts.
-- Demo data is inserted into MongoDB when the demo code is missing. Use code `YZ-DEMO-0001` to test tracking. Delete that document from the `PrintRequest` collection to reset the demo record.
 - The document title is set per language, not per route.
 
 ## Deployment notes

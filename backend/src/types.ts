@@ -5,6 +5,18 @@ export type ServiceSlug = (typeof SERVICE_SLUGS)[number];
 
 export const REQUEST_STATUSES = ["received", "review", "confirmed", "closed"] as const;
 export type RequestStatus = (typeof REQUEST_STATUSES)[number];
+export const PRINT_PLACEMENTS = ["front", "back", "left-sleeve", "right-sleeve", "custom"] as const;
+export type PrintPlacement = (typeof PRINT_PLACEMENTS)[number];
+
+export interface RequestItem {
+  productId: string;
+  productName: string;
+  size: string;
+  color: string;
+  style: string;
+  specialRequest: string;
+  printPlacement?: PrintPlacement;
+}
 
 export interface PrintRequest {
   id: string;
@@ -14,7 +26,11 @@ export interface PrintRequest {
   service: ServiceSlug;
   quantity: number;
   details: string;
+  items: RequestItem[];
   artworkUrl?: string;
+  designPreviewUrl?: string;
+  designFileName?: string;
+  logoDataUrl?: string;
   status: RequestStatus;
   createdAt: string;
 }
