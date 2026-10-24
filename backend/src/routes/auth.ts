@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { authenticate, clearSessionCookie, createAuthToken, createUser, hashPassword, hashToken, requireUser, setSessionCookie, verifyPassword } from "../auth.js";
-import { sendAuthEmail } from "../email.js";
+import { isAuthEmailConfigured, sendAuthEmail } from "../email.js";
 import { AuthTokenModel } from "../models/AuthToken.js";
 import { UserModel } from "../models/User.js";
 
@@ -17,14 +17,24 @@ export const authRouter = Router();
 
 authRouter.post("/signup", async (req, res) => {
   const input = credentialsSchema.extend({ name: z.string().trim().min(2).max(80) }).parse(req.body);
+  if (!isAuthEmailConfigured()) {
+    res.status(503).json({ error: "authentication_email_not_configured" });
+    return;
+  }
   if (await UserModel.exists({ email: input.email })) {
     res.status(409).json({ error: "email_already_registered" });
     return;
   }
   const user = await createUser(input.name, input.email, input.password);
   const verificationToken = await createAuthToken(user.id, "verify-email", 24 * 60 * 60 * 1000);
-  const verifyUrl = `${process.env.APP_URL ?? "http://localhost:5173"}/auth/verify?token=${encodeURIComponent(verificationToken)}`;
-  await sendAuthEmail(user.email, "Verify your Yuzersef account", `Welcome to Yuzersef, ${user.name}.\n\nVerify your email:\n${verifyUrl}`);
+  const verifyUrl = `${process.env.APP_URL ?? "http://localhost:5173"}/auth?token=${encodeURIComponent(verificationToken)}`;
+  try {
+    await sendAuthEmail(user.email, "Verify your Yuzersef account", `Welcome to Yuzersef, ${user.name}.\n\nVerify your email:\n${verifyUrl}`);
+  } catch (error) {
+    await AuthTokenModel.deleteMany({ userId: user.id }).exec();
+    await UserModel.deleteOne({ id: user.id }).exec();
+    throw error;
+  }
   res.status(201).json({ user: publicUser(user), message: "verification_email_sent" });
 });
 
@@ -69,6 +79,10 @@ authRouter.get("/verify", async (req, res) => {
 
 authRouter.post("/forgot-password", async (req, res) => {
   const { email } = z.object({ email: emailSchema }).parse(req.body);
+  if (!isAuthEmailConfigured()) {
+    res.status(503).json({ error: "authentication_email_not_configured" });
+    return;
+  }
   const user = await UserModel.findOne({ email }).exec();
   if (user) {
     const token = await createAuthToken(user.id, "reset-password", 60 * 60 * 1000);
