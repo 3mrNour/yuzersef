@@ -34,6 +34,7 @@ authRouter.post("/signup", async (req, res) => {
     await AuthTokenModel.deleteMany({ userId: user.id }).exec();
     await UserModel.deleteOne({ id: user.id }).exec();
     if (error instanceof AuthEmailError) {
+      console.error(`[auth] Verification email delivery failed: ${error.message}`);
       res.status(502).json({ error: "authentication_email_delivery_failed" });
       return;
     }

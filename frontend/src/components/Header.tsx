@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "../lib/cn";
 import { buttonClass } from "../lib/styles";
 import { useLanguage } from "../providers/LanguageProvider";
-import { useAuth } from "../providers/AuthProvider";
+import { useAuth } from "../providers/useAuth";
 import { CtaArrow } from "./ui/CtaArrow";
 import { LanguageToggle } from "./ui/LanguageToggle";
 import { Logo } from "./ui/Logo";

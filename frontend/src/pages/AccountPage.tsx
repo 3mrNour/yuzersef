@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PageHeader } from "../components/PageHeader";
 import { fetchMyRequests, type TrackedRequest } from "../lib/api";
-import { useAuth } from "../providers/AuthProvider";
+import { useAuth } from "../providers/useAuth";
 
 export function AccountPage() {
   const { user, loading, signOut } = useAuth();

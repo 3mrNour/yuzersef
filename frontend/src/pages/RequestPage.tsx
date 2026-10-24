@@ -23,7 +23,7 @@ import { cn } from "../lib/cn";
 import { buttonClass } from "../lib/styles";
 import { isValidHttpUrl, isValidPhone, normalizePhone } from "../lib/validation";
 import { useLanguage } from "../providers/LanguageProvider";
-import { useAuth } from "../providers/AuthProvider";
+import { useAuth } from "../providers/useAuth";
 
 const SERVICE_ORDER: ServiceSlug[] = ["clothing", "mugs", "caps", "stickers", "cases"];
 const DEFAULT_PLACEMENTS: PrintPlacement[] = ["front", "back", "left-sleeve", "right-sleeve", "custom"];
