@@ -42,12 +42,12 @@ function StudioPreview({ className, note }: { className?: string; note?: string 
     >
       <div className="relative">
         <img
-          src="/mock/studio-preview.svg"
+          src="/mock/tshirt.jpg"
           alt={t.studioUi.previewAlt}
-          width={900}
-          height={1100}
+          width={2000}
+          height={1333}
           loading="lazy"
-          className="aspect-[4/5] w-full object-cover"
+          className="aspect-[4/5] w-full bg-bone object-contain"
         />
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-forest-950/85 via-forest-950/35 to-transparent px-5 pb-5 pt-16">
