@@ -9,10 +9,12 @@ import {
   type ReactNode,
 } from "react";
 import type { DesignState } from "./types";
+import type { Studio3DDesign } from "./studio3d";
 
 export interface DesignDraft {
   state: DesignState;
   blob: Blob;
+  studio3d?: Studio3DDesign;
 }
 
 interface DesignDraftValue {
@@ -41,6 +43,7 @@ export function DesignDraftProvider({ children }: { children: ReactNode }) {
     setDraftState({
       state: { ...next.state, previewUrl: url },
       blob: next.blob,
+      studio3d: next.studio3d,
     });
   }, []);
 

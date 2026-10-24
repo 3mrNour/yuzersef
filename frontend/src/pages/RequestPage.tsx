@@ -17,7 +17,7 @@ import { DemoTag } from "../components/ui/DemoTag";
 import { contact, serviceLabels, type ServiceSlug } from "../content";
 import { useDesignDraft } from "../features/studio/DesignDraft";
 import { mockProducts } from "../features/studio/mockProducts";
-import { createRequest, fetchPrintPlacementSettings } from "../lib/api";
+import { ApiError, createRequest, fetchPrintPlacementSettings } from "../lib/api";
 import type { PrintPlacement, PrintPlacementProfile, RequestItem } from "../lib/api";
 import { cn } from "../lib/cn";
 import { buttonClass } from "../lib/styles";
@@ -112,6 +112,7 @@ export function RequestPage() {
   const [placementSettingsReady, setPlacementSettingsReady] = useState(!initialService);
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState<Status>("idle");
+  const [submissionError, setSubmissionError] = useState("");
   const [code, setCode] = useState("");
   const successRef = useRef<HTMLDivElement>(null);
 
@@ -174,7 +175,10 @@ export function RequestPage() {
   function update(field: Field, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
-    if (status === "error") setStatus("idle");
+    if (status === "error") {
+      setStatus("idle");
+      setSubmissionError("");
+    }
   }
 
   function updatePiece(index: number, field: keyof RequestItem, value: string) {
@@ -184,7 +188,10 @@ export function RequestPage() {
       ),
     );
     setErrors((current) => ({ ...current, pieces: undefined }));
-    if (status === "error") setStatus("idle");
+    if (status === "error") {
+      setStatus("idle");
+      setSubmissionError("");
+    }
   }
 
   function addPiece() {
@@ -233,6 +240,7 @@ export function RequestPage() {
     }
 
     setStatus("submitting");
+    setSubmissionError("");
     try {
       const created = await createRequest({
         name: values.name.trim(),
@@ -247,13 +255,28 @@ export function RequestPage() {
           .map((piece, index) => `${index + 1}. ${piece.productName}, ${piece.size}, ${piece.color}, ${piece.style}`)
           .join(" | "),
         artworkUrl: values.artwork.trim() || undefined,
-        designPreviewUrl: draft ? await blobToDataUrl(draft.blob) : undefined,
+        // The 3D payload already contains the generated sheet. Sending the same
+        // image again as designPreviewUrl needlessly enlarges the request.
+        designPreviewUrl: draft?.studio3d ? undefined : draft ? await blobToDataUrl(draft.blob) : undefined,
         designFileName: draft?.state.logoFileName,
         logoDataUrl: draft?.state.logoDataUrl,
+        studio3d: draft?.studio3d,
       });
       setCode(created.code);
       setStatus("success");
-    } catch {
+    } catch (error) {
+      console.error("Request submission failed", error);
+      if (error instanceof ApiError && error.code === "authentication_required") {
+        navigate("/auth");
+        return;
+      }
+      setSubmissionError(
+        error instanceof ApiError && error.code.startsWith("payload_too_large")
+          ? "ملف التصميم كبير جدًا. قلّل حجم الصور وحاول مرة أخرى."
+          : error instanceof ApiError && error.code.startsWith("validation")
+            ? "بيانات الطلب أو إعدادات الطباعة غير صالحة. راجع الاختيارات وحاول مرة أخرى."
+            : "",
+      );
       setStatus("error");
     }
   }
@@ -683,7 +706,7 @@ export function RequestPage() {
                       role="alert"
                       className="rounded-[var(--radius-field)] border border-danger/40 bg-danger/10 p-4 text-sm text-bone"
                     >
-                      <p>{t.request.error}</p>
+                      <p>{submissionError || t.request.error}</p>
                       <a
                         href={contact.whatsappHref}
                         target="_blank"

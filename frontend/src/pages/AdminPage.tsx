@@ -38,6 +38,7 @@ import {
   type PortfolioItem,
 } from "../lib/api";
 import type { ServiceSlug } from "../content";
+import type { Studio3DZone } from "../features/studio/studio3d";
 import { cn } from "../lib/cn";
 import { buttonClass } from "../lib/styles";
 import { useLanguage } from "../providers/LanguageProvider";
@@ -85,13 +86,13 @@ function dateLabel(value: string | null, lang: "ar" | "en"): string {
 function getStatusClasses(status: RequestStatus): string {
   switch (status) {
     case "received":
-      return "border-[#f5c47b]/30 bg-[#f5c47b]/10 text-[#f9d9a7]";
+      return "border-sand/40 bg-sand/10 text-sand";
     case "review":
-      return "border-[#8cc7ff]/30 bg-[#8cc7ff]/10 text-[#bfe0ff]";
+      return "border-sand/40 bg-sand/10 text-sand";
     case "confirmed":
       return "border-[#8de5b3]/30 bg-[#8de5b3]/10 text-[#b7f1cf]";
     case "closed":
-      return "border-[#d5d8df]/30 bg-[#d5d8df]/10 text-[#edf0f6]";
+      return "border-bone/30 bg-bone/10 text-bone";
     default:
       return "border-bone/20 bg-bone/5 text-bone";
   }
@@ -378,35 +379,35 @@ export function AdminPage() {
 
   if (!key) {
     return (
-      <main className="min-h-screen bg-[#0d1722] px-5 py-12 text-[#f8f2eb]" dir={ar ? "rtl" : "ltr"}>
+      <main className="min-h-screen bg-forest-950 px-5 py-12 text-bone" dir={ar ? "rtl" : "ltr"}>
         <div className="mx-auto grid max-w-5xl gap-6 pt-10 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-[32px] border border-[#f0d9b2]/20 bg-[radial-gradient(circle_at_top_left,_rgba(224,181,97,0.12),_transparent_35%),linear-gradient(135deg,#101b28,#182836)] p-6 sm:p-8">
-            <div className="mb-8 inline-flex items-center gap-3 rounded-full border border-[#f0d9b2]/20 bg-[#f0d9b2]/5 px-3 py-2 text-xs uppercase tracking-[0.2em] text-[#f0d9b2]">
+          <div className="rounded-[32px] border border-sand/25 bg-forest-900 p-6 sm:p-8">
+            <div className="mb-8 inline-flex items-center gap-3 rounded-full border border-sand/30 bg-sand/10 px-3 py-2 text-xs uppercase tracking-[0.2em] text-sand">
               <Sparkle size={16} /> Yuzersef
             </div>
-            <h1 className="text-3xl font-semibold text-[#f8f2eb] md:text-5xl">{copy.keyTitle}</h1>
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-[#dfe8ef]/75">{copy.keyHint}</p>
-            <div className="mt-8 space-y-3 text-sm text-[#dfe8ef]/70">
-              <div className="flex items-center gap-3"><CheckCircle size={18} className="text-[#f0d9b2]" /> {ar ? "إدارة الطلبات" : "Request operations"}</div>
-              <div className="flex items-center gap-3"><CheckCircle size={18} className="text-[#f0d9b2]" /> {ar ? "تحديث حالات التنفيذ" : "Status workflows"}</div>
-              <div className="flex items-center gap-3"><CheckCircle size={18} className="text-[#f0d9b2]" /> {ar ? "مراجعة ملفات التصميم" : "Design review"}</div>
+            <h1 className="text-3xl font-semibold text-bone md:text-5xl">{copy.keyTitle}</h1>
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-bone/75">{copy.keyHint}</p>
+            <div className="mt-8 space-y-3 text-sm text-bone/70">
+              <div className="flex items-center gap-3"><CheckCircle size={18} className="text-sand" /> {ar ? "إدارة الطلبات" : "Request operations"}</div>
+              <div className="flex items-center gap-3"><CheckCircle size={18} className="text-sand" /> {ar ? "تحديث حالات التنفيذ" : "Status workflows"}</div>
+              <div className="flex items-center gap-3"><CheckCircle size={18} className="text-sand" /> {ar ? "مراجعة ملفات التصميم" : "Design review"}</div>
             </div>
           </div>
 
-          <form onSubmit={signIn} className="rounded-[32px] border border-[#f0d9b2]/15 bg-[#152130] p-6 shadow-[0_24px_80px_rgba(2,6,12,0.44)] sm:p-8">
+          <form onSubmit={signIn} className="rounded-[32px] border border-bone/15 bg-forest-900 p-6 shadow-2xl shadow-black/25 sm:p-8">
             <div className="mb-6 flex items-center gap-3">
-              <div className="rounded-full bg-[#f0d9b2]/10 p-2 text-[#f0d9b2]">
+              <div className="rounded-full bg-sand/10 p-2 text-sand">
                 <LockKey size={24} />
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-[#c8d4df]">Secure access</p>
-                <h2 className="mt-1 text-2xl text-[#f8f2eb]">{copy.keyTitle}</h2>
+                <p className="text-xs uppercase tracking-[0.18em] text-bone/70">Secure access</p>
+                <h2 className="mt-1 text-2xl text-bone">{copy.keyTitle}</h2>
               </div>
             </div>
 
-            <label htmlFor="admin-key" className="mb-2 block text-sm font-medium text-[#edf1f5]">{copy.keyPlaceholder}</label>
+            <label htmlFor="admin-key" className="mb-2 block text-sm font-medium text-bone">{copy.keyPlaceholder}</label>
             <div className="relative">
-              <Key aria-hidden="true" size={18} className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-[#b7c7d7]" />
+              <Key aria-hidden="true" size={18} className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-bone/60" />
               <input
                 id="admin-key"
                 type="password"
@@ -430,12 +431,12 @@ export function AdminPage() {
   return (
     <main className="min-h-screen bg-forest-950 px-4 py-6 text-bone sm:px-6 lg:px-8" dir={ar ? "rtl" : "ltr"}>
       <div className="mx-auto max-w-[1500px]">
-        <header className="rounded-[28px] border border-[#f0d9b2]/10 bg-[#101d2b]/80 p-5 shadow-[0_20px_60px_rgba(2,6,12,0.35)] sm:p-6">
+        <header className="rounded-[28px] border border-sand/15 bg-forest-900/80 p-5 shadow-2xl shadow-black/25 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="font-latin text-xs uppercase tracking-[0.2em] text-[#f0d9b2]">Yuzersef / Admin</p>
+              <p className="font-latin text-xs uppercase tracking-[0.2em] text-sand">Yuzersef / Admin</p>
               <h1 className="mt-2 text-3xl font-semibold md:text-4xl">{copy.title}</h1>
-              <p className="mt-2 text-sm text-[#dfe8ef]/70">{copy.subtitle}</p>
+              <p className="mt-2 text-sm text-bone/70">{copy.subtitle}</p>
             </div>
             <div className="flex gap-2">
               <button type="button" onClick={() => void load()} className={cn(buttonClass("secondary"), "px-4")} disabled={loading}>
@@ -449,8 +450,8 @@ export function AdminPage() {
         </header>
 
         {message ? (
-          <div role="alert" className="mt-5 flex items-center gap-2 rounded-[var(--radius-field)] border border-[#ffb0a1]/30 bg-[#ffb0a1]/10 p-4 text-sm text-[#fbe8e0]">
-            <WarningCircle size={18} className="text-[#ffb0a1]" /> {message}
+          <div role="alert" className="mt-5 flex items-center gap-2 rounded-[var(--radius-field)] border border-danger/30 bg-danger/10 p-4 text-sm text-bone">
+            <WarningCircle size={18} className="text-danger" /> {message}
           </div>
         ) : null}
 
@@ -461,13 +462,13 @@ export function AdminPage() {
             { label: copy.latestRequest, value: summary?.latestRequestCode ?? "—", icon: CheckCircle },
             { label: copy.latestContact, value: dateLabel(summary?.latestContactAt ?? null, lang), icon: PhoneCall },
           ].map(({ label, value, icon: Icon }) => (
-            <div key={label} className="rounded-[24px] border border-[#f0d9b2]/10 bg-[#101d2b] p-5 shadow-[0_12px_30px_rgba(2,6,12,0.25)]">
+            <div key={label} className="rounded-[24px] border border-sand/15 bg-forest-900 p-5 shadow-lg shadow-black/20">
               <div className="flex items-center justify-between gap-2">
-                <Icon size={22} className="text-[#f0d9b2]" />
-                <span className="rounded-full border border-[#f0d9b2]/10 bg-[#f0d9b2]/5 px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-[#dfe8ef]/60">Live</span>
+                <Icon size={22} className="text-sand" />
+                <span className="rounded-full border border-sand/20 bg-sand/10 px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-bone/60">Live</span>
               </div>
-              <p className="mt-5 text-xs uppercase tracking-[0.18em] text-[#dfe8ef]/60">{label}</p>
-              <p className="mt-2 text-2xl font-semibold text-[#f8f2eb]">{value}</p>
+              <p className="mt-5 text-xs uppercase tracking-[0.18em] text-bone/60">{label}</p>
+              <p className="mt-2 text-2xl font-semibold text-bone">{value}</p>
             </div>
           ))}
         </section>
@@ -485,12 +486,12 @@ export function AdminPage() {
               className={cn(
                 "rounded-[22px] border p-4 text-start transition-all duration-200",
                 requestFilter === status && section === "requests"
-                  ? "border-[#f0d9b2]/45 bg-[#f0d9b2]/10 shadow-[0_12px_30px_rgba(240,217,178,0.12)]"
-                  : "border-[#f0d9b2]/10 bg-[#101d2b] hover:border-[#f0d9b2]/30",
+                  ? "border-sand/60 bg-sand/15 shadow-[0_12px_30px_rgba(234,192,140,0.16)]"
+                  : "border-sand/15 bg-forest-900 hover:border-sand/50",
               )}
             >
-              <p className="text-xs uppercase tracking-[0.16em] text-[#dfe8ef]/60">{statusLabel(status, lang)}</p>
-              <p className="mt-3 text-3xl font-semibold text-[#f8f2eb]">{summary?.statuses[status] ?? 0}</p>
+              <p className="text-xs uppercase tracking-[0.16em] text-bone/60">{statusLabel(status, lang)}</p>
+              <p className="mt-3 text-3xl font-semibold text-bone">{summary?.statuses[status] ?? 0}</p>
             </button>
           ))}
         </section>
@@ -542,7 +543,7 @@ export function AdminPage() {
         {section !== "settings" && section !== "portfolio" ? <div className="mt-6 grid gap-6 xl:grid-cols-[1.45fr_0.95fr]">
           <div>
             {loading && !summary ? (
-              <div className="flex items-center justify-center gap-3 py-20 text-sm text-[#dfe8ef]/65"><CircleNotch size={20} className="animate-spin text-[#f0d9b2]" /> {copy.refresh}</div>
+              <div className="flex items-center justify-center gap-3 py-20 text-sm text-bone/65"><CircleNotch size={20} className="animate-spin text-sand" /> {copy.refresh}</div>
             ) : section === "requests" ? (
               <RequestTable
                 requests={requests}
@@ -599,20 +600,20 @@ function RequestTable({
           className={cn(
             "rounded-[26px] border p-5 transition-all duration-200",
             selectedRequestId === request.id
-              ? "border-[#f0d9b2]/35 bg-[#101d2b] shadow-[0_16px_40px_rgba(240,217,178,0.08)]"
-              : "border-[#f0d9b2]/10 bg-[#101d2b]/80 hover:border-[#f0d9b2]/25",
+              ? "border-sand/50 bg-forest-900 shadow-[0_16px_40px_rgba(6,95,91,0.18)]"
+              : "border-sand/15 bg-forest-900/80 hover:border-sand/40",
           )}
         >
           <div className="flex flex-wrap items-start justify-between gap-4">
             <button type="button" onClick={() => onSelect(request.id)} className="flex-1 text-start">
               <div className="flex items-center gap-3">
-                <p dir="ltr" className="font-latin text-xl tracking-wide text-[#f0d9b2]">{request.code}</p>
+                <p dir="ltr" className="font-latin text-xl tracking-wide text-sand">{request.code}</p>
                 <span className={cn("inline-flex rounded-full border px-2 py-1 text-[10px] uppercase tracking-[0.18em]", getStatusClasses(request.status))}>
                   {statusLabel(request.status, lang)}
                 </span>
               </div>
-              <p className="mt-2 text-sm text-[#f8f2eb]">{request.name}</p>
-              <p className="mt-1 text-xs text-[#dfe8ef]/60">{dateLabel(request.createdAt, lang)} · {request.quantity} {copy.pieces}</p>
+              <p className="mt-2 text-sm text-bone">{request.name}</p>
+              <p className="mt-1 text-xs text-bone/60">{dateLabel(request.createdAt, lang)} · {request.quantity} {copy.pieces}</p>
             </button>
             <select
               value={request.status}
@@ -625,14 +626,14 @@ function RequestTable({
             </select>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-[#dfe8ef]/70">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f0d9b2]/10 bg-[#f0d9b2]/5 px-2.5 py-1.5">
-              <PhoneCall size={12} className="text-[#f0d9b2]" />
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-bone/70">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-sand/15 bg-sand/10 px-2.5 py-1.5">
+              <PhoneCall size={12} className="text-sand" />
               {request.phone}
             </span>
             {request.items?.length ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f0d9b2]/10 bg-[#f0d9b2]/5 px-2.5 py-1.5">
-                <UserList size={12} className="text-[#f0d9b2]" />
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-sand/15 bg-sand/10 px-2.5 py-1.5">
+                <UserList size={12} className="text-sand" />
                 {request.items.length} {copy.pieces}
               </span>
             ) : null}
@@ -640,13 +641,13 @@ function RequestTable({
 
           <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
             {request.items?.length ? request.items.slice(0, 3).map((item, index) => (
-              <div key={`${request.id}-${index}`} className="rounded-[18px] border border-[#f0d9b2]/10 bg-[#0d1722] p-3 text-xs text-[#dfe8ef]/75">
-                <p className="font-medium text-[#f8f2eb]">{item.productName}</p>
+              <div key={`${request.id}-${index}`} className="rounded-[18px] border border-sand/15 bg-forest-950 p-3 text-xs text-bone/75">
+                <p className="font-medium text-bone">{item.productName}</p>
                 <p className="mt-1">{item.size} · {item.color} · {item.style}</p>
-                {item.specialRequest ? <p className="mt-2 line-clamp-2 text-[#f0d9b2]">{item.specialRequest}</p> : null}
+                {item.specialRequest ? <p className="mt-2 line-clamp-2 text-sand">{item.specialRequest}</p> : null}
               </div>
             )) : (
-              <div className="rounded-[18px] border border-dashed border-[#f0d9b2]/15 bg-[#0d1722] p-3 text-xs text-[#dfe8ef]/65">
+              <div className="rounded-[18px] border border-dashed border-sand/20 bg-forest-950 p-3 text-xs text-bone/65">
                 {request.details || copy.noItems}
               </div>
             )}
@@ -796,7 +797,7 @@ function RequestDetailPanel({
 }) {
   if (!request) {
     return (
-      <aside className="rounded-[28px] border border-[#f0d9b2]/10 bg-[#101d2b] p-6 text-sm text-[#dfe8ef]/65">
+      <aside className="rounded-[28px] border border-sand/15 bg-forest-900 p-6 text-sm text-bone/65">
         {copy.noSelection}
       </aside>
     );
@@ -804,13 +805,14 @@ function RequestDetailPanel({
 
   const designUrl = request.designPreviewUrl || request.artworkUrl;
   const logoUrl = request.logoDataUrl;
+  const studio3d = request.studio3d;
 
   return (
-    <aside className="rounded-[28px] border border-[#f0d9b2]/10 bg-[#101d2b] p-5 shadow-[0_16px_40px_rgba(2,6,12,0.28)] sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f0d9b2]/10 pb-4">
+    <aside className="rounded-[28px] border border-sand/15 bg-forest-900 p-5 shadow-2xl shadow-black/25 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-sand/15 pb-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-[#dfe8ef]/50">{copy.details}</p>
-          <p dir="ltr" className="mt-2 font-latin text-2xl text-[#f0d9b2]">{request.code}</p>
+          <p className="text-xs uppercase tracking-[0.18em] text-bone/50">{copy.details}</p>
+          <p dir="ltr" className="mt-2 font-latin text-2xl text-sand">{request.code}</p>
         </div>
         <select
           value={request.status}
@@ -823,24 +825,24 @@ function RequestDetailPanel({
       </div>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-[20px] border border-[#f0d9b2]/10 bg-[#0d1722] p-4">
-          <p className="text-xs uppercase tracking-[0.16em] text-[#dfe8ef]/55">{copy.customer}</p>
-          <p className="mt-3 text-lg font-medium text-[#f8f2eb]">{request.name}</p>
-          <a href={`https://wa.me/2${request.phone}`} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 text-sm text-[#f0d9b2]">
+        <div className="rounded-[20px] border border-sand/15 bg-forest-950 p-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-bone/55">{copy.customer}</p>
+          <p className="mt-3 text-lg font-medium text-bone">{request.name}</p>
+          <a href={`https://wa.me/2${request.phone}`} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 text-sm text-sand">
             <PhoneCall size={16} /> {request.phone}
           </a>
         </div>
-        <div className="rounded-[20px] border border-[#f0d9b2]/10 bg-[#0d1722] p-4">
-          <p className="text-xs uppercase tracking-[0.16em] text-[#dfe8ef]/55">{copy.preview}</p>
-          <p className="mt-3 text-lg font-medium text-[#f8f2eb]">{request.quantity} {copy.pieces}</p>
-          <p className="mt-2 text-sm text-[#dfe8ef]/70">{dateLabel(request.createdAt, lang)}</p>
+        <div className="rounded-[20px] border border-sand/15 bg-forest-950 p-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-bone/55">{copy.preview}</p>
+          <p className="mt-3 text-lg font-medium text-bone">{request.quantity} {copy.pieces}</p>
+          <p className="mt-2 text-sm text-bone/70">{dateLabel(request.createdAt, lang)}</p>
         </div>
       </div>
 
       {designUrl ? (
-        <div className="mt-5 rounded-[24px] border border-[#f0d9b2]/10 bg-[#0d1722] p-4">
+        <div className="mt-5 rounded-[24px] border border-sand/15 bg-forest-950 p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <span className="inline-flex items-center gap-2 text-sm text-[#f0d9b2]">
+            <span className="inline-flex items-center gap-2 text-sm text-sand">
               <FileImage size={18} /> {copy.design}
             </span>
             <a
@@ -848,15 +850,15 @@ function RequestDetailPanel({
               target="_blank"
               rel="noreferrer"
               download={request.designFileName ?? `${request.code}.png`}
-              className="inline-flex items-center gap-2 rounded-full border border-[#f0d9b2]/20 bg-[#f0d9b2]/5 px-3 py-1.5 text-xs text-[#f8f2eb]"
+              className="inline-flex items-center gap-2 rounded-full border border-sand/25 bg-sand/10 px-3 py-1.5 text-xs text-bone"
             >
               <DownloadSimple size={14} /> {copy.download}
             </a>
           </div>
-          <img src={designUrl} alt={copy.design} className="max-h-[260px] w-full rounded-[18px] border border-[#f0d9b2]/10 bg-[#0a141d] object-contain" />
+          <img src={designUrl} alt={copy.design} className="max-h-[260px] w-full rounded-[18px] border border-sand/15 bg-forest-950 object-contain" />
         </div>
       ) : (
-        <div className="mt-5 rounded-[24px] border border-dashed border-[#f0d9b2]/15 bg-[#0d1722] p-6 text-sm text-[#dfe8ef]/60">
+        <div className="mt-5 rounded-[24px] border border-dashed border-sand/20 bg-forest-950 p-6 text-sm text-bone/60">
           {copy.noDesign}
         </div>
       )}
@@ -871,7 +873,7 @@ function RequestDetailPanel({
               href={logoUrl}
               target="_blank"
               rel="noreferrer"
-              download={request.designFileName ?? `${request.code}-logo.png`}
+              download={`${request.code}-logo.png`}
               className="inline-flex items-center gap-2 rounded-full border border-sand/30 bg-sand/10 px-3 py-1.5 text-xs text-bone"
             >
               <DownloadSimple size={14} /> {copy.download}
@@ -879,6 +881,41 @@ function RequestDetailPanel({
           </div>
           <img src={logoUrl} alt={lang === "ar" ? "اللوجو الأصلي" : "Original uploaded logo"} className="max-h-[180px] w-full rounded-[18px] border border-bone/10 bg-white object-contain p-3" />
           <p className="mt-2 text-xs text-bone/55">{request.designFileName ?? "Uploaded logo"}</p>
+        </div>
+      ) : null}
+
+      {studio3d ? (
+        <div className="mt-5 rounded-[24px] border border-sand/20 bg-forest-950/55 p-4">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <span className="inline-flex items-center gap-2 text-sm text-sand">
+              <FileImage size={18} /> {lang === "ar" ? "معاينة الاستوديو ثلاثي الأبعاد" : "3D studio design"}
+            </span>
+            <a
+              href={studio3d.sheetDataUrl}
+              download={`${request.code}-3d-sheet.png`}
+              className="inline-flex items-center gap-2 rounded-full border border-sand/30 bg-sand/10 px-3 py-1.5 text-xs text-bone"
+            >
+              <DownloadSimple size={14} /> {copy.download}
+            </a>
+          </div>
+          <img
+            src={studio3d.sheetDataUrl}
+            alt={lang === "ar" ? "ورقة معاينة التصميم ثلاثي الأبعاد" : "3D design preview sheet"}
+            className="w-full rounded-[18px] border border-bone/10 bg-forest-950 object-contain"
+          />
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            {(Object.entries(studio3d.faces) as [Studio3DZone, { imageDataUrl: string }][]).map(([zone, face]) => (
+              <a
+                key={zone}
+                href={face.imageDataUrl}
+                download={`${request.code}-${zone}.png`}
+                className="rounded-xl border border-bone/10 bg-forest-950 p-2"
+              >
+                <img src={face.imageDataUrl} alt={zone} className="aspect-video w-full object-contain" />
+                <span className="mt-1 block text-center text-xs text-bone/60">{zone}</span>
+              </a>
+            ))}
+          </div>
         </div>
       ) : null}
 
@@ -890,7 +927,7 @@ function RequestDetailPanel({
           </div>
           <div className="space-y-3">
             {request.items.map((item, index) => (
-              <div key={`${request.id}-${index}`} className="rounded-[20px] border border-[#f0d9b2]/10 bg-[#0d1722] p-4">
+              <div key={`${request.id}-${index}`} className="rounded-[20px] border border-sand/15 bg-forest-950 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium text-[#f8f2eb]">{item.productName}</p>
@@ -926,7 +963,7 @@ function RequestDetailPanel({
       ) : null}
 
       {request.details ? (
-        <div className="mt-5 rounded-[20px] border border-[#f0d9b2]/10 bg-[#0d1722] p-4">
+        <div className="mt-5 rounded-[20px] border border-sand/15 bg-forest-950 p-4">
           <p className="text-sm font-medium text-[#f8f2eb]">{copy.notes}</p>
           <p className="mt-2 text-sm leading-relaxed text-[#dfe8ef]/75">{request.details}</p>
         </div>
@@ -952,7 +989,7 @@ function ContactTable({ contacts, lang, copy }: { contacts: AdminContact[]; lang
   return (
     <div className="mt-5 grid gap-4">
       {contacts.length ? contacts.map((contact) => (
-        <article key={contact.id} className="rounded-[24px] border border-[#f0d9b2]/10 bg-[#101d2b] p-5">
+        <article key={contact.id} className="rounded-[24px] border border-sand/15 bg-forest-900 p-5">
           <div className="flex flex-wrap justify-between gap-3">
             <div>
               <p className="font-medium text-[#f8f2eb]">{contact.name}</p>
@@ -968,7 +1005,7 @@ function ContactTable({ contacts, lang, copy }: { contacts: AdminContact[]; lang
 }
 
 function EmptyState({ text }: { text: string }) {
-  return <div className="rounded-[24px] border border-dashed border-[#f0d9b2]/15 bg-[#101d2b] py-16 text-center text-sm text-[#dfe8ef]/55">{text}</div>;
+  return <div className="rounded-[24px] border border-dashed border-sand/20 bg-forest-900 py-16 text-center text-sm text-bone/55">{text}</div>;
 }
 
 function Pagination({ page, pages, previous, next, onChange }: { page: number; pages: number; previous: string; next: string; onChange: (page: number) => void }) {

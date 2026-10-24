@@ -24,7 +24,10 @@ import {
   type RefObject,
 } from "react";
 import * as THREE from "three";
+import { useNavigate } from "react-router-dom";
 import type { PrintPlacement } from "../lib/api";
+import type { Studio3DDesign, Studio3DZone } from "../features/studio/studio3d";
+import { useDesignDraft } from "../features/studio/DesignDraft";
 import { mockProducts } from "../features/studio/mockProducts";
 import { cn } from "../lib/cn";
 import { buttonClass } from "../lib/styles";
@@ -36,7 +39,18 @@ const SLEEVE_BOUNDARY = 0.36;
 const DEFAULT_SCALE = 0.3;
 const SURFACE_OFFSET = 0.008;
 
-type Zone = "front" | "back" | "left-sleeve" | "right-sleeve";
+async function blobToDataUrl(blob: Blob): Promise<string> {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => typeof reader.result === "string"
+      ? resolve(reader.result)
+      : reject(new Error("Could not read image"));
+    reader.onerror = () => reject(reader.error ?? new Error("Could not read image"));
+    reader.readAsDataURL(blob);
+  });
+}
+
+type Zone = Studio3DZone;
 
 interface ZoneDecal {
   position: THREE.Vector3;
@@ -401,6 +415,8 @@ function ShirtStage({
 
 export function DevStudio3D() {
   const { lang } = useLanguage();
+  const { setDraft } = useDesignDraft();
+  const navigate = useNavigate();
   const tee = mockProducts[0];
   const [tintHex, setTintHex] = useState(tee.colors[0].hex);
   const [designs, setDesigns] = useState<DesignMap>({});
@@ -725,6 +741,54 @@ export function DevStudio3D() {
     }
   }, [composeFaceSheet, hasDecals, isExporting]);
 
+  const continueToRequest = useCallback(async () => {
+    if (!hasDecals || isExporting) return;
+    setIsExporting(true);
+    try {
+      const sheetDataUrl = await composeFaceSheet();
+      if (!sheetDataUrl) return;
+      const faces = {} as Studio3DDesign["faces"];
+      for (const zone of ZONES) {
+        const asset = designs[zone.id];
+        if (asset) faces[zone.id] = { imageDataUrl: await fetch(asset.previewUrl).then((response) => response.blob()).then(blobToDataUrl), aspect: asset.aspect };
+      }
+      const persisted: Studio3DDesign = {
+        version: 1,
+        tintHex,
+        sheetDataUrl,
+        faces,
+        decals: Object.fromEntries(
+          Object.entries(decals).map(([zone, decal]) => [
+            zone,
+            {
+              position: decal.position.toArray() as [number, number, number],
+              normal: decal.normal.toArray() as [number, number, number],
+              scale: decal.scale,
+              spin: decal.spin,
+            },
+          ]),
+        ),
+      };
+      const blob = await (await fetch(sheetDataUrl)).blob();
+      setDraft({
+        state: {
+          productId: tee._id,
+          colorId: tee.colors.find((color) => color.hex === tintHex)?.id ?? tee.colors[0].id,
+          viewId: tee.views[0].id,
+          printPlacement: "front",
+          transform: { x: 0, y: 0, scale: 1, rotation: 0 },
+        },
+        blob,
+        studio3d: persisted,
+      });
+      navigate("/request?service=clothing");
+    } catch {
+      setUploadError(lang === "ar" ? "تعذر تجهيز التصميم للطلب" : "Could not prepare the design for the request");
+    } finally {
+      setIsExporting(false);
+    }
+  }, [composeFaceSheet, decals, designs, hasDecals, isExporting, lang, navigate, setDraft, tee, tintHex]);
+
   useEffect(() => {
     if (!import.meta.env.DEV) return;
     (window as unknown as { __ys3dComposeSheet?: () => Promise<string | null> }).__ys3dComposeSheet = composeFaceSheet;
@@ -1027,6 +1091,14 @@ export function DevStudio3D() {
               >
                 <DownloadSimple aria-hidden="true" size={18} />
                 {lang === "ar" ? "تنزيل ورقة كل الجهات" : "Download all-faces sheet"}
+              </button>
+              <button
+                type="button"
+                onClick={() => void continueToRequest()}
+                disabled={!hasDecals || isExporting}
+                className={cn(buttonClass("secondary"), "w-full")}
+              >
+                {lang === "ar" ? "إرسال التصميم إلى الطلب" : "Use this design in a request"}
               </button>
               <button
                 type="button"

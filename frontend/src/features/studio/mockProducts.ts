@@ -7,6 +7,7 @@ export const mockProducts: Product[] = [
     category: "clothing",
     colors: [
       { id: "bone", name: "Bone", hex: "#E9E2D4" },
+      { id: "black", name: "Black", hex: "#111111" },
       { id: "forest", name: "Forest", hex: "#033A34" },
       { id: "sand", name: "Sand", hex: "#EAC08C" },
       { id: "clay", name: "Clay", hex: "#C88F56" },

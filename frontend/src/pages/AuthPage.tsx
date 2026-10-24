@@ -3,11 +3,43 @@ import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { PageHeader } from "../components/PageHeader";
 import { ApiError, forgotPassword, resetPassword, verifyEmail } from "../lib/api";
+import { buttonClass } from "../lib/styles";
 import { isValidPhone, normalizePhone } from "../lib/validation";
 import { useAuth } from "../providers/useAuth";
 import { useLanguage } from "../providers/LanguageProvider";
 
 type AuthMode = "login" | "signup" | "forgot" | "reset";
+
+function PasswordField({
+  visible,
+  value,
+  label,
+  placeholder,
+  isArabic,
+  onChange,
+  onToggle,
+}: {
+  visible: boolean;
+  value: string;
+  label: string;
+  placeholder: string;
+  isArabic: boolean;
+  onChange: (value: string) => void;
+  onToggle: () => void;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-bone/80">{label}</span>
+      <span className="relative block">
+        <LockKey aria-hidden="true" size={18} className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-bone/35" />
+        <input required minLength={8} type={visible ? "text" : "password"} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className="auth-input ps-11 pe-12" />
+        <button type="button" onClick={onToggle} aria-label={visible ? (isArabic ? "إخفاء كلمة المرور" : "Hide password") : (isArabic ? "إظهار كلمة المرور" : "Show password")} className="absolute end-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-bone/45 transition-colors hover:bg-sand/20 hover:text-sand">
+          {visible ? <EyeSlash size={18} /> : <Eye size={18} />}
+        </button>
+      </span>
+    </label>
+  );
+}
 
 export function AuthPage() {
   const { lang } = useLanguage();
@@ -147,24 +179,6 @@ export function AuthPage() {
   const intro = mode === "login" ? copy.loginIntro : mode === "signup" ? copy.signupIntro : copy.intro;
   const needsPassword = mode !== "forgot";
 
-  function PasswordField({ confirm = false }: { confirm?: boolean }) {
-    const visible = confirm ? showConfirmPassword : showPassword;
-    const value = confirm ? confirmPassword : password;
-    const setValue = confirm ? setConfirmPassword : setPassword;
-    return (
-      <label className="block">
-        <span className="mb-2 block text-sm font-semibold text-bone/80">{confirm ? copy.confirmPassword : copy.password}</span>
-        <span className="relative block">
-          <LockKey aria-hidden="true" size={18} className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-bone/35" />
-          <input required minLength={8} type={visible ? "text" : "password"} value={value} onChange={(event) => setValue(event.target.value)} placeholder={copy.passwordPlaceholder} className="auth-input ps-11 pe-12" />
-          <button type="button" onClick={() => confirm ? setShowConfirmPassword((current) => !current) : setShowPassword((current) => !current)} aria-label={visible ? (isArabic ? "إخفاء كلمة المرور" : "Hide password") : (isArabic ? "إظهار كلمة المرور" : "Show password")} className="absolute end-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-bone/45 transition-colors hover:bg-bone/10 hover:text-bone">
-            {visible ? <EyeSlash size={18} /> : <Eye size={18} />}
-          </button>
-        </span>
-      </label>
-    );
-  }
-
   return (
     <>
       <PageHeader title={title} intro={intro} />
@@ -186,8 +200,8 @@ export function AuthPage() {
             {mode === "signup" ? <label className="mb-5 block"><span className="mb-2 block text-sm font-semibold text-bone/80">{copy.name}</span><input required minLength={2} value={name} onChange={(event) => setName(event.target.value)} placeholder={copy.namePlaceholder} className="auth-input" /></label> : null}
             {mode === "signup" ? <label className="mb-5 block"><span className="mb-2 block text-sm font-semibold text-bone/80">{copy.phone}</span><input required type="tel" inputMode="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder={copy.phonePlaceholder} className="auth-input font-latin" dir="ltr" /></label> : null}
             <label className="mb-5 block"><span className="mb-2 block text-sm font-semibold text-bone/80">{copy.email}</span><input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder={copy.emailPlaceholder} className="auth-input font-latin" dir="ltr" /></label>
-            {needsPassword ? <div className="grid gap-5 sm:grid-cols-2"><PasswordField />{mode === "signup" || mode === "reset" ? <PasswordField confirm /> : null}</div> : null}
-            <button className="mt-7 flex min-h-12 w-full items-center justify-center rounded-full bg-sand px-5 font-semibold text-forest-950 transition-transform hover:-translate-y-0.5">{mode === "login" ? copy.login : mode === "signup" ? copy.signup : mode === "forgot" ? copy.sendReset : copy.reset}</button>
+            {needsPassword ? <div className="grid gap-5 sm:grid-cols-2"><PasswordField visible={showPassword} value={password} label={copy.password} placeholder={copy.passwordPlaceholder} isArabic={isArabic} onChange={setPassword} onToggle={() => setShowPassword((current) => !current)} />{mode === "signup" || mode === "reset" ? <PasswordField visible={showConfirmPassword} value={confirmPassword} label={copy.confirmPassword} placeholder={copy.passwordPlaceholder} isArabic={isArabic} onChange={setConfirmPassword} onToggle={() => setShowConfirmPassword((current) => !current)} /> : null}</div> : null}
+            <button className={buttonClass("primary", "dark") + " mt-7 w-full"}>{mode === "login" ? copy.login : mode === "signup" ? copy.signup : mode === "forgot" ? copy.sendReset : copy.reset}</button>
             {message ? <p role="status" className="mt-4 rounded-xl border border-sand/20 bg-sand/10 p-3 text-sm leading-6 text-sand">{message}</p> : null}
             {mode !== "reset" ? <button type="button" onClick={() => setMode(mode === "signup" ? "login" : "signup")} className="mt-6 text-sm font-medium text-bone/65 underline underline-offset-4 hover:text-bone">{mode === "signup" ? copy.alreadyAccount : copy.createAccount}</button> : null}
             {mode === "login" ? <button type="button" onClick={() => setMode("forgot")} className="mt-3 block text-sm text-bone/55 underline underline-offset-4 hover:text-bone">{copy.forgot}</button> : null}
