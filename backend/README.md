@@ -1,6 +1,6 @@
 # Backend
 
-Express 5 API for requests, order tracking, and contact messages. Validation is handled with Zod. Data is stored in a JSON file for this competition build.
+Express 5 API for requests, order tracking, and contact messages. Validation is handled with Zod. Data is stored in MongoDB through Mongoose.
 
 ## Run
 
@@ -33,6 +33,14 @@ npm run start --workspace backend
 
 The build compiles TypeScript to `backend/dist`. Start expects `backend/dist/index.js`.
 
+Run backend tests:
+
+```bash
+npm run test --workspace backend
+```
+
+The tests cover request/contact validation and admin API-key authorization. Database integration tests should run against a dedicated test database before deployment.
+
 Direct alternative for typecheck:
 
 ```powershell
@@ -45,15 +53,22 @@ node "..\node_modules\typescript\bin\tsc" --noEmit
 | --- | --- | --- |
 | `PORT` | `8787` | HTTP port |
 | `ALLOWED_ORIGINS` | any origin | Comma-separated CORS allowlist |
+| `MONGODB_URI` | required | MongoDB connection string |
+| `MONGODB_DB` | `yuzersef` | MongoDB database name |
+| `ADMIN_API_KEY` | required for admin routes | Secret sent in the `x-admin-api-key` header |
 
 Example:
 
 ```bash
 PORT=8787
 ALLOWED_ORIGINS=https://yuzersef.example,https://www.yuzersef.example
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>/<database>?retryWrites=true&w=majority
+MONGODB_DB=yuzersef
+ADMIN_API_KEY=replace-with-a-long-random-secret
 ```
 
 Set `ALLOWED_ORIGINS` in production. With no value, the API reflects the request origin.
+Set `MONGODB_URI` in `backend/.env` for local development. Do not commit credentials.
 
 ## Endpoints
 
@@ -125,17 +140,28 @@ Stores a contact message.
 
 Unknown routes return JSON `404`. Zod validation errors return `400` with an `issues` array. Unexpected errors return `500`.
 
-## Storage
+## Admin API
 
-`src/store.ts` keeps state in memory and persists to `backend/data/store.json` after writes.
+Admin routes require the `x-admin-api-key` header to match `ADMIN_API_KEY`. They return `401` when the key is missing or invalid.
 
-- `backend/data/*.json` is gitignored.
-- On first start, the store falls back to `src/data/seed.ts`.
-- The seed contains one demo request with code `YZ-DEMO-0001`.
-- Delete `backend/data/store.json` and restart to reset local data to the seed.
-- Writes use a temporary file and rename to reduce partial-write risk.
+```text
+GET   /api/admin/requests?page=1&limit=25
+PATCH /api/admin/requests/:id/status
+GET   /api/admin/contacts?page=1&limit=25
+```
 
-This is single-process, file-based storage. It is not suitable for multiple instances or production traffic without a shared database.
+The list endpoints return `{ items, page, limit, total, pages }`. The status endpoint accepts
+`{ "status": "received" | "review" | "confirmed" | "closed" }`.
+
+## MongoDB structure
+
+- `src/db.ts` connects to MongoDB and inserts the demo request if it does not exist.
+- `src/models/PrintRequest.ts` defines the print request schema and indexes.
+- `src/models/ContactMessage.ts` defines the contact message schema and indexes.
+- `src/routes/requests.ts` handles request creation and tracking.
+- `src/routes/contact.ts` handles contact message creation.
+
+The `PrintRequest` collection has unique indexes for `id` and `code`. The `ContactMessage` collection has a unique index for `id`. Both collections store ISO timestamp strings to preserve the existing API shape.
 
 ## Demo tracking
 
@@ -149,8 +175,8 @@ curl http://localhost:8787/api/requests/YZ-DEMO-0001
 
 - Rate limiting is in memory and resets on restart.
 - There is no authentication, admin API, or request listing endpoint.
-- Contact details and request details are stored in plain JSON. Add access control and retention rules before public use.
+- Contact details and request details are stored in MongoDB. Add access control and retention rules before public use.
 - Set `ALLOWED_ORIGINS` and serve the API behind HTTPS.
-- Use a database, backups, and durable storage for production.
+- Configure MongoDB backups and durable storage for production.
 - The API does not upload or host artwork. It stores an optional link.
 - Add automated tests and structured logging before relying on this in production.

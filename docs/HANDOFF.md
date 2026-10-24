@@ -16,7 +16,7 @@ The site is functionally complete for a competition build.
 - Order tracking with a demo code
 - Interactive mockup studio with logo upload, canvas preview, PNG export, and request handoff
 - Privacy, terms, and 404 pages
-- Express API with JSON persistence, validation, and in-memory rate limiting
+- Express API with MongoDB persistence, validation, and in-memory rate limiting
 - Placeholder brand mark, ten portfolio SVGs, and generated studio product artwork
 - 11 geometry tests for the studio
 - Root, frontend, backend, and scripts documentation
@@ -69,8 +69,10 @@ Build, typechecks, tests, and production preview pass. Core flows were exercised
 - Public tracking lookup
 - Contact message storage
 - In-memory rate limiting per IP
-- JSON store with temp file and rename writes
+- Mongoose models for requests and contact messages
 - Seed request with code `YZ-DEMO-0001`
+- Protected admin API for reviewing requests and contact messages
+- Backend validation and admin authorization tests
 - Health and services endpoints
 
 ### Assets and docs
@@ -183,9 +185,9 @@ The mobile page is long. This is a design choice, not a bug. See remaining work 
 3. Studio product artwork is generated SVG, not photographed products. Print areas are calibrated for these demo assets only.
 4. Studio PNG and `DesignState` are not uploaded or persisted. The request page preview is in memory and is lost on reload.
 5. Automated tests cover geometry only. API, request, tracking, contact, language, and UI flows are still manual.
-6. JSON storage is single-process and not production-grade.
+6. MongoDB persistence is configured, but production backups and retention rules still need to be established.
 7. Rate limiting is in memory and resets on restart.
-8. There is no admin UI or API to list requests or contact messages. Leads are stored but not readable from the app.
+8. There is no admin UI. The protected admin API lists requests/contact messages and updates request status.
 9. Per-route titles and social metadata are not implemented. The title depends on language, not page.
 10. There is no OG image. The Twitter card is `summary`.
 11. The production bundle is about 560 kB minified. The home route still ships the request/track/studio preview code. Further route-level splitting would reduce the initial payload.
@@ -205,12 +207,14 @@ Priority order:
    Any backend change needs a storage plan, file limits, and cleanup policy.
 4. Replace studio mock products with photographed products and recalibrate print areas in `/dev/print-area`.
 5. Add an admin path for reviewing requests and contact messages, or forward submissions to email/CRM.
-6. Replace JSON storage with a database. Add migrations, backups, and a retention policy.
-7. Add automated tests:
+6. Configure MongoDB backups and a retention policy.
+7. Expand automated tests:
    - Studio geometry is covered; add image/export behavior and request handoff
    - API validation and rate limiting
    - Request creation and tracking
    - Contact submission
+   - MongoDB-backed request/contact route integration
+   - Admin list and status-update routes
    - Language toggle and direction
    - Portfolio filters and FAQ
    - Keyboard and mobile menu behavior
@@ -248,21 +252,19 @@ Priority order:
 | `frontend/src/components/TrackStatus.tsx` | Status rail |
 | `frontend/src/providers/LanguageProvider.tsx` | Language, direction, metadata |
 | `frontend/src/lib/api.ts` | API client |
-| `backend/src/app.ts` | Routes, schemas, rate limits |
-| `backend/src/store.ts` | Persistence |
-| `backend/src/data/seed.ts` | Demo request |
+| `backend/src/app.ts` | App setup and rate limits |
+| `backend/src/db.ts` | MongoDB connection and demo request seed |
+| `backend/src/models/PrintRequest.ts` | Print request schema |
+| `backend/src/models/ContactMessage.ts` | Contact message schema |
+| `backend/src/routes/requests.ts` | Request creation and tracking routes |
+| `backend/src/routes/contact.ts` | Contact message route |
+| `backend/src/routes/admin.ts` | Protected lead review routes |
 | `scripts/generate-placeholders.mjs` | Placeholder asset generator |
 | `scripts/generate-mock-products.mjs` | Studio product artwork generator |
 
 ## Local reset
 
-To reset requests and contact messages:
-
-1. Stop the API.
-2. Delete `backend/data/store.json`.
-3. Start the API again. The seed request is recreated.
-
-The JSON store is gitignored. Test data created during development was removed before the initial commit.
+To reset requests and contact messages, stop the API and remove the documents from the `PrintRequest` and `ContactMessage` collections in MongoDB. On the next API start, the demo request `YZ-DEMO-0001` is recreated if it is missing.
 
 ## Repository
 

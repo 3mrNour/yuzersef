@@ -7,7 +7,7 @@ This is a competition build. Portfolio artwork and the logo mark are placeholder
 ## Stack
 
 - **Frontend:** Vite, React 19, TypeScript, Tailwind CSS v4, Motion, React Router, Phosphor Icons
-- **Backend:** Node.js, Express 5, Zod, JSON file storage
+- **Backend:** Node.js, Express 5, Zod, MongoDB via Mongoose
 - **Fonts:** Reem Kufi (display), IBM Plex Sans Arabic (body), Space Grotesk (Latin labels)
 
 ## Project structure
@@ -31,12 +31,12 @@ This is a competition build. Portfolio artwork and the logo mark are placeholder
 │   │   └── sections/                    # home page sections
 │   └── vite.config.ts                   # dev proxy: /api -> localhost:8787
 ├── backend/
-│   ├── data/                            # JSON store (gitignored, created at runtime)
+│   ├── models/                          # MongoDB schemas
+│   ├── routes/                          # API route modules
 │   └── src/
-│       ├── app.ts                       # routes, validation, rate limiting
-│       ├── data/seed.ts                 # demo request: YZ-DEMO-0001
+│       ├── app.ts                       # app setup and rate limiting
+│       ├── db.ts                        # MongoDB connection and demo seed
 │       ├── index.ts                     # server entry
-│       ├── store.ts                     # JSON persistence
 │       └── types.ts
 └── scripts/
     ├── generate-placeholders.mjs        # placeholder logo and portfolio SVGs
@@ -71,6 +71,9 @@ The Vite dev server proxies `/api` to the backend, so no frontend environment va
 | --- | --- | --- | --- |
 | `PORT` | backend | `8787` | API port |
 | `ALLOWED_ORIGINS` | backend | any origin | Comma-separated allowed CORS origins |
+| `MONGODB_URI` | backend | required | MongoDB connection string |
+| `MONGODB_DB` | backend | `yuzersef` | MongoDB database name |
+| `ADMIN_API_KEY` | backend | required for admin routes | Secret for the protected admin API |
 | `VITE_API_URL` | frontend | empty | Absolute API base URL for a split deployment |
 
 Example production values:
@@ -79,6 +82,9 @@ Example production values:
 # backend
 PORT=8787
 ALLOWED_ORIGINS=https://yuzersef.example
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>/<database>?retryWrites=true&w=majority
+MONGODB_DB=yuzersef
+ADMIN_API_KEY=replace-with-a-long-random-secret
 
 # frontend build
 VITE_API_URL=https://api.yuzersef.example
@@ -92,6 +98,7 @@ Root:
 npm run dev        # frontend and backend together
 npm run build      # typecheck and build both workspaces
 npm run typecheck  # typecheck both workspaces
+npm run test --workspace backend # backend validation and admin-auth tests
 npm run preview    # preview the built frontend
 npm run assets     # regenerate placeholder logo and portfolio SVGs
 npm run assets:studio # regenerate studio product artwork
@@ -149,6 +156,8 @@ GET  /api/services         Service slugs and labels
 POST /api/requests         Create a print request
 GET  /api/requests/:code   Look up a request by code
 POST /api/contact          Send a contact message
+GET  /api/admin/requests   List requests (requires `x-admin-api-key`)
+GET  /api/admin/contacts   List contact messages (requires `x-admin-api-key`)
 ```
 
 Create a request:
@@ -208,17 +217,17 @@ The studio product data lives in `frontend/src/features/studio/mockProducts.ts`.
 - The studio uses generated SVG product artwork, not photographed products. The preview, colours, and print areas are demo data.
 - The studio exports a 1200px PNG and keeps the `DesignState` in memory for the request page. The PNG and design JSON are not uploaded to the backend, so the shop does not receive them after a reload.
 - There is no pricing, online payment, account system, or file upload. Customers submit details and an optional artwork link.
-- Requests and contact messages are stored in a JSON file on the server. Use a database and durable storage for real traffic.
+- Requests and contact messages are stored in MongoDB. Configure backups and durable storage for real traffic.
 - Rate limiting is per-process and resets when the API restarts.
-- Demo data is seeded when the store is empty. Use code `YZ-DEMO-0001` to test tracking. Delete `backend/data/store.json` to reset local data.
+- Demo data is inserted into MongoDB when the demo code is missing. Use code `YZ-DEMO-0001` to test tracking. Delete that document from the `PrintRequest` collection to reset the demo record.
 - The document title is set per language, not per route.
 
 ## Deployment notes
 
-1. Build the frontend with `npm run build --workspace frontend`, then serve `frontend/dist`.
-2. Build and run the API with `npm run build --workspace backend` and `npm run start --workspace backend`.
-3. Route `/api` to the API process on the same origin, or set `VITE_API_URL` at build time and configure `ALLOWED_ORIGINS` on the backend.
-4. Persist `backend/data/` on a volume if you keep file storage. Replace it with a real database for production.
+1. Set `MONGODB_URI` in `backend/.env`; never commit the credentials.
+2. Build the frontend with `npm run build --workspace frontend`, then serve `frontend/dist`.
+3. Build and run the API with `npm run build --workspace backend` and `npm run start --workspace backend`.
+4. Route `/api` to the API process on the same origin, or set `VITE_API_URL` at build time and configure `ALLOWED_ORIGINS` on the backend.
 5. Add real privacy and retention rules before collecting customer data publicly.
 
 ## Accessibility and behaviour
