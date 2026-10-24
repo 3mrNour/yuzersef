@@ -1,5 +1,4 @@
 import { useLanguage } from "../providers/LanguageProvider";
-import { HeroCollage } from "../components/HeroCollage";
 import { RotatingText } from "../components/reactbits/RotatingText";
 import { ButtonLink } from "../components/ui/ButtonLink";
 import { CtaArrow } from "../components/ui/CtaArrow";
@@ -52,7 +51,14 @@ export function Hero() {
         </div>
 
         <div className="w-full">
-          <HeroCollage />
+          <img
+            src="/brand/hero.png"
+            alt={t.hero.imageAlt}
+            width={1080}
+            height={1080}
+            fetchPriority="high"
+            className="float-a mx-auto w-full max-w-[520px] drop-shadow-[0_50px_80px_rgba(0,0,0,0.6)] lg:max-w-none"
+          />
         </div>
       </div>
     </section>

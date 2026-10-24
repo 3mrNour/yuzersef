@@ -940,8 +940,7 @@ const CircularGallery = ({
         if (slot !== null && !state.hover.has(slot)) state.hover.set(slot, 0);
         wake();
       }
-      if (card) container.setAttribute('data-pointer', '');
-      else container.removeAttribute('data-pointer');
+      container.removeAttribute('data-pointer');
     };
 
     const snapNow = () => {

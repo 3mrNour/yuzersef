@@ -147,7 +147,7 @@ node ..\node_modules\tsx\dist\cli.mjs src\index.ts
 
 | Route | Description |
 | --- | --- |
-| `/` | Home: hero, services, studio teaser, process, portfolio, about, FAQ, contact |
+| `/` | Home: hero with real product-lineup shot, services gallery (non-clicking), studio teaser, process, portfolio, FAQ, contact |
 | `/request` | Request form, optional `?service=clothing` prefill |
 | `/track` | Order tracking by a real request code |
 | `/studio` | 3D mockup studio (Three.js): per-face print placement and branded all-faces export |

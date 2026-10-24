@@ -326,7 +326,7 @@ export function RequestPage() {
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button
                         type="button"
-                        onClick={() => navigate("/studio")}
+                        onClick={() => navigate("/studio/classic")}
                         className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full border border-bone/20 px-3 text-xs text-bone/65 transition-colors hover:border-bone/40 hover:text-bone"
                       >
                         <PencilSimple aria-hidden="true" size={14} />

@@ -73,6 +73,7 @@ export interface SiteCopy {
     subtitle: string;
     proofLabel: string;
     proofTagline: string;
+    imageAlt: string;
     slides: {
       image: string;
       alt: string;
@@ -293,22 +294,22 @@ const sharedServices = {
   items: [
     {
       slug: "clothing",
-      image: "/portfolio/clothing-tee-halftone.svg",
+      image: "/mock/tshirt.jpg",
       tone: "paper",
     },
     {
       slug: "caps",
-      image: "/portfolio/caps-dots.svg",
+      image: "/mock/ccap.jpg",
       tone: "ink",
     },
     {
       slug: "mugs",
-      image: "/portfolio/mugs-wave.svg",
+      image: "/mock/mug.jpg",
       tone: "brand",
     },
     {
       slug: "cases",
-      image: "/portfolio/cases-grid.svg",
+      image: "/mock/tote-bag.jpg",
       tone: "sand",
     },
   ],
@@ -378,6 +379,7 @@ export const copy: Record<Lang, SiteCopy> = {
       subtitle: "من الفكرة للمنتج، نطبع ونخصّص قطعك في أسوان. اختار، ابعت تصميمك، والباقي علينا.",
       proofLabel: "PROOF 01",
       proofTagline: "خليك مختلف",
+      imageAlt: "منتجات يوزرسيف المطبوعة على حامل عرض: هوديز، تيشيرتات، كاب، مج، جراب، وستيكرز",
       slides: [
         {
           image: "/portfolio/clothing-tee-halftone.svg",
@@ -402,38 +404,38 @@ export const copy: Record<Lang, SiteCopy> = {
       items: [
         {
           slug: "clothing",
-          title: "ملابس مطبوعة",
+          title: "تيشيرت",
           kicker: "تيشيرتات، هوديز، سويت شيرتس",
           description: "اختار القطعة واللون والمقاس، واحنا نطبع التصميم.",
           image: sharedServices.items[0].image,
-          alt: "نموذج تيشيرت مطبوع بنقشة هاف تون",
+          alt: "تيشيرت أسود مطبوع بشعار يوزرسيف بخط متصل على خلفية تركوازية",
           tone: "paper",
         },
         {
           slug: "caps",
-          title: "كابات وستيكرز",
+          title: "كاب",
           kicker: "كابات، ستيكرز، ليبلات",
           description: "كاب بشعارك، ستيكرز، وليبلات تختم بها منتجك.",
           image: sharedServices.items[1].image,
-          alt: "نموذج كاب مطبوع بنقشة نقاط",
+          alt: "كاب تركوازي مشتك عليه شعار يوزرسيف على خلفية مطابقة",
           tone: "ink",
         },
         {
           slug: "mugs",
-          title: "مجات وهدايا",
+          title: "مج",
           kicker: "مجات وهدايا دعائية",
           description: "مجات وهدايا بشعارك أو تصميمك.",
           image: sharedServices.items[2].image,
-          alt: "نموذج مج مطبوع بموجة",
+          alt: "مج أخضر لامع مطبوع به شعار يوزرسيف على خلفية فاتحة",
           tone: "brand",
         },
         {
           slug: "cases",
-          title: "جرابات وتصاميم خاصة",
-          kicker: "جرابات موبايل وتصميم مخصص",
-          description: "جراب موبايل بتصميمك، أو تصميم نعمله معاك.",
+          title: "توت باج",
+          kicker: "توت باجات، جرابات، تصميم مخصص",
+          description: "توت باج أو جراب موبايل بتصميمك، أو تصميم نعمله معاك.",
           image: sharedServices.items[3].image,
-          alt: "نموذج جراب موبايل مطبوع بشبكة",
+          alt: "توت باج أخضر مطبوع به شعار يوزرسيف على خلفية رمادية فاتحة",
           tone: "sand",
         },
       ],
@@ -753,6 +755,7 @@ export const copy: Record<Lang, SiteCopy> = {
       subtitle: "From idea to product, we print and personalise your pieces in Aswan. Pick, send your design, we take it from there.",
       proofLabel: "PROOF 01",
       proofTagline: "BE DIFFERENT",
+      imageAlt: "Yuzersef printed products on a display stand: hoodies, t-shirts, a cap, a mug, a phone case, and stickers",
       slides: [
         {
           image: "/portfolio/clothing-tee-halftone.svg",
@@ -777,38 +780,38 @@ export const copy: Record<Lang, SiteCopy> = {
       items: [
         {
           slug: "clothing",
-          title: "Printed clothing",
+          title: "T-shirt",
           kicker: "T-shirts, hoodies, sweatshirts",
           description: "Choose the piece, colour and size, and we print your design.",
           image: sharedServices.items[0].image,
-          alt: "Demo printed t-shirt with a halftone print",
+          alt: "Black t-shirt with the Yuzersef calligraphy logo on a teal background",
           tone: "paper",
         },
         {
           slug: "caps",
-          title: "Caps & stickers",
+          title: "Cap",
           kicker: "Caps, stickers, labels",
           description: "A cap with your mark, stickers, and labels for your product.",
           image: sharedServices.items[1].image,
-          alt: "Demo printed cap with a dot pattern",
+          alt: "Teal cap with the Yuzersef mark on a matching teal background",
           tone: "ink",
         },
         {
           slug: "mugs",
-          title: "Mugs & gifts",
+          title: "Mug",
           kicker: "Mugs and promotional gifts",
           description: "Mugs and gifts with your logo or design.",
           image: sharedServices.items[2].image,
-          alt: "Demo printed mug with a wave print",
+          alt: "Glossy green mug with the Yuzersef mark on a light beige background",
           tone: "brand",
         },
         {
           slug: "cases",
-          title: "Cases & custom work",
-          kicker: "Phone cases and one-off designs",
-          description: "A phone case with your design, or one we make with you.",
+          title: "Tote bag",
+          kicker: "Tote bags, phone cases, one-off designs",
+          description: "A tote or phone case with your design, or one we make with you.",
           image: sharedServices.items[3].image,
-          alt: "Demo phone case with a grid print",
+          alt: "Green tote bag with the Yuzersef logo on a light grey background",
           tone: "sand",
         },
       ],
