@@ -382,17 +382,17 @@ export const copy: Record<Lang, SiteCopy> = {
       imageAlt: "منتجات يوزرسيف المطبوعة على حامل عرض: هوديز، تيشيرتات، كاب، مج، جراب، وستيكرز",
       slides: [
         {
-          image: "/portfolio/clothing-tee-halftone.svg",
+          image: "/mock/tshirt.jpg",
           alt: "نموذج تجريبي لتيشيرت مطبوع",
           label: "تيشيرت",
         },
         {
-          image: "/portfolio/mugs-wave.svg",
+          image: "/mock/mug.jpg",
           alt: "نموذج تجريبي لمج مطبوع",
           label: "مج",
         },
         {
-          image: "/portfolio/caps-dots.svg",
+          image: "/mock/ccap.jpg",
           alt: "نموذج تجريبي لكاب مطبوع",
           label: "كاب",
         },
@@ -758,17 +758,17 @@ export const copy: Record<Lang, SiteCopy> = {
       imageAlt: "Yuzersef printed products on a display stand: hoodies, t-shirts, a cap, a mug, a phone case, and stickers",
       slides: [
         {
-          image: "/portfolio/clothing-tee-halftone.svg",
+          image: "/mock/tshirt.jpg",
           alt: "Demo mockup of a printed t-shirt",
           label: "Tee",
         },
         {
-          image: "/portfolio/mugs-wave.svg",
+          image: "/mock/mug.jpg",
           alt: "Demo mockup of a printed mug",
           label: "Mug",
         },
         {
-          image: "/portfolio/caps-dots.svg",
+          image: "/mock/ccap.jpg",
           alt: "Demo mockup of a printed cap",
           label: "Cap",
         },

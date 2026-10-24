@@ -353,7 +353,7 @@ export function AdminPage() {
           titleEn: "New work",
           altAr: "صورة عمل جديد",
           altEn: "New portfolio work",
-          image: "/portfolio/clothing-tee-halftone.svg",
+          image: "/mock/tshirt.jpg",
           sortOrder: portfolioItems.length,
           active: true,
         });
