@@ -173,7 +173,7 @@
     width: 100%;
     min-height: 48px;
     border-radius: var(--radius-field);
-    border: 1px solid color-mix(in srgb, var(--color-bone) 20%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-bone) 32%, transparent);
     background-color: color-mix(in srgb, var(--color-forest-950) 72%, transparent);
     padding: 0.75rem 1rem;
     color: var(--color-bone);
@@ -187,12 +187,14 @@
   }
 
   .field:hover {
-    border-color: color-mix(in srgb, var(--color-bone) 32%, transparent);
+    border-color: color-mix(in srgb, var(--color-sand) 62%, transparent);
+    background-color: color-mix(in srgb, var(--color-forest-900) 78%, transparent);
   }
 
   .field:focus {
     outline: none;
     border-color: var(--color-sand);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-sand) 18%, transparent);
     background-color: color-mix(in srgb, var(--color-forest-900) 80%, transparent);
   }
 

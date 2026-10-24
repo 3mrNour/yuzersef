@@ -17,21 +17,71 @@ import { DemoTag } from "../components/ui/DemoTag";
 import { contact, serviceLabels, type ServiceSlug } from "../content";
 import { useDesignDraft } from "../features/studio/DesignDraft";
 import { mockProducts } from "../features/studio/mockProducts";
-import { createRequest } from "../lib/api";
+import { createRequest, fetchPrintPlacementSettings } from "../lib/api";
+import type { PrintPlacement, PrintPlacementProfile, RequestItem } from "../lib/api";
 import { cn } from "../lib/cn";
 import { buttonClass } from "../lib/styles";
 import { isValidHttpUrl, isValidPhone, normalizePhone } from "../lib/validation";
 import { useLanguage } from "../providers/LanguageProvider";
 
 const SERVICE_ORDER: ServiceSlug[] = ["clothing", "mugs", "caps", "stickers", "cases"];
+const DEFAULT_PLACEMENTS: PrintPlacement[] = ["front", "back", "left-sleeve", "right-sleeve", "custom"];
 
-type Field = "name" | "phone" | "service" | "quantity" | "details" | "artwork";
+function placementLabel(value: PrintPlacement, lang: "ar" | "en"): string {
+  const labels: Record<PrintPlacement, { ar: string; en: string }> = {
+    front: { ar: "الأمام", en: "Front" },
+    back: { ar: "الخلف", en: "Back" },
+    "left-sleeve": { ar: "الكم الأيسر", en: "Left sleeve" },
+    "right-sleeve": { ar: "الكم الأيمن", en: "Right sleeve" },
+    custom: { ar: "موضع مخصص", en: "Custom placement" },
+  };
+  return labels[value][lang];
+}
+
+async function blobToDataUrl(blob: Blob): Promise<string> {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== "string") {
+        reject(new Error("Could not read the exported design"));
+        return;
+      }
+      resolve(reader.result);
+    };
+    reader.onerror = () => reject(reader.error ?? new Error("Could not read the exported design"));
+    reader.readAsDataURL(blob);
+  });
+}
+
+type Field = "name" | "phone" | "service" | "pieces" | "artwork";
 type Errors = Partial<Record<Field, string>>;
 type Status = "idle" | "submitting" | "success" | "error";
 
 function readServiceParam(value: string | null): ServiceSlug | "" {
   if (!value) return "";
   return SERVICE_ORDER.includes(value as ServiceSlug) ? (value as ServiceSlug) : "";
+}
+
+function getDefaultPiece(
+  product: (typeof mockProducts)[number] | null,
+  service: ServiceSlug | "",
+  lang: "ar" | "en",
+  selectedStyle?: string,
+  selectedPlacement?: PrintPlacement,
+): RequestItem {
+  const productName = product?.name ?? (service ? serviceLabels[service][lang] : "");
+  const color = product?.colors[0]?.name ?? "";
+  const size = product?.options?.sizes?.[0] ?? (product ? "One size" : "");
+  const style = selectedStyle ?? product?.options?.styles?.[0] ?? product?.views[0]?.label ?? "";
+  return {
+    productId: product?._id ?? service,
+    productName,
+    size,
+    color,
+    style,
+    specialRequest: "",
+    printPlacement: selectedPlacement ?? "front",
+  };
 }
 
 export function RequestPage() {
@@ -50,10 +100,14 @@ export function RequestPage() {
     name: "",
     phone: "",
     service: initialService as ServiceSlug | "",
-    quantity: "1",
-    details: "",
     artwork: "",
   });
+  const [pieces, setPieces] = useState<RequestItem[]>([
+    getDefaultPiece(draftProduct, initialService, lang, draft?.state.styleId, draft?.state.printPlacement),
+  ]);
+  const [availablePlacements, setAvailablePlacements] = useState<PrintPlacement[]>(DEFAULT_PLACEMENTS);
+  const [placementProfiles, setPlacementProfiles] = useState<Record<string, PrintPlacementProfile>>({});
+  const [placementSettingsReady, setPlacementSettingsReady] = useState(!initialService);
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState<Status>("idle");
   const [code, setCode] = useState("");
@@ -63,10 +117,72 @@ export function RequestPage() {
     if (status === "success") successRef.current?.focus();
   }, [status]);
 
+  useEffect(() => {
+    let active = true;
+    if (!values.service) {
+      setAvailablePlacements(DEFAULT_PLACEMENTS);
+      setPlacementSettingsReady(true);
+      return () => {
+        active = false;
+      };
+    }
+    const service = values.service as ServiceSlug;
+    setPlacementSettingsReady(false);
+    void fetchPrintPlacementSettings()
+      .then((result) => {
+        if (active) {
+          setPlacementProfiles(result.profiles);
+          const profile = draftProduct ? result.profiles[draftProduct._id] : undefined;
+          const nextPlacements = profile?.placements ?? result.placements[service] ?? DEFAULT_PLACEMENTS;
+          setAvailablePlacements(nextPlacements);
+          setPieces((current) =>
+            current.map((piece) =>
+              nextPlacements.includes(piece.printPlacement ?? "front")
+                ? piece
+                : { ...piece, printPlacement: nextPlacements[0] },
+            ),
+          );
+          setPlacementSettingsReady(true);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setAvailablePlacements([]);
+          setPlacementSettingsReady(false);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [draftProduct, values.service]);
+
   function update(field: Field, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
     if (status === "error") setStatus("idle");
+  }
+
+  function updatePiece(index: number, field: keyof RequestItem, value: string) {
+    setPieces((current) =>
+      current.map((piece, pieceIndex) =>
+        pieceIndex === index ? { ...piece, [field]: value } : piece,
+      ),
+    );
+    setErrors((current) => ({ ...current, pieces: undefined }));
+    if (status === "error") setStatus("idle");
+  }
+
+  function addPiece() {
+    if (pieces.length >= 500) return;
+    setPieces((current) => [
+      ...current,
+      getDefaultPiece(draftProduct, values.service, lang, undefined, draft?.state.printPlacement),
+    ]);
+  }
+
+  function removePiece(index: number) {
+    if (pieces.length === 1) return;
+    setPieces((current) => current.filter((_, pieceIndex) => pieceIndex !== index));
   }
 
   function validate(): Errors {
@@ -74,11 +190,19 @@ export function RequestPage() {
     if (values.name.trim().length < 2) next.name = t.request.validation.name;
     if (!isValidPhone(values.phone)) next.phone = t.request.validation.phone;
     if (!values.service) next.service = t.request.validation.service;
-    const quantity = Number(values.quantity);
-    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 500) {
-      next.quantity = t.request.validation.quantity;
+    if (pieces.length < 1 || pieces.length > 500) next.pieces = t.request.validation.pieces;
+    if (pieces.some((piece) => !piece.size.trim())) next.pieces = t.request.validation.size;
+    if (pieces.some((piece) => piece.specialRequest.trim().length > 500)) {
+      next.pieces = t.request.validation.specialRequest;
     }
-    if (values.details.trim().length < 3) next.details = t.request.validation.details;
+    if (pieces.some((piece) => !availablePlacements.includes(piece.printPlacement ?? "front"))) {
+      next.pieces = lang === "ar" ? "يوجد موضع طباعة غير متاح لهذا المنتج." : "A print position is not available for this product.";
+    }
+    if (values.service && (!placementSettingsReady || availablePlacements.length === 0)) {
+      next.pieces = lang === "ar"
+        ? "لا يمكن إرسال الطلب قبل تحميل مواضع الطباعة المتاحة."
+        : "The available print positions must load before submitting.";
+    }
     if (!isValidHttpUrl(values.artwork)) next.artwork = t.request.validation.artwork;
     return next;
   }
@@ -99,9 +223,18 @@ export function RequestPage() {
         name: values.name.trim(),
         phone: normalizePhone(values.phone),
         service: values.service as ServiceSlug,
-        quantity: Number(values.quantity),
-        details: values.details.trim(),
+        quantity: pieces.length,
+        items: pieces.map((piece) => ({
+          ...piece,
+          specialRequest: piece.specialRequest.trim(),
+        })),
+        details: pieces
+          .map((piece, index) => `${index + 1}. ${piece.productName}, ${piece.size}, ${piece.color}, ${piece.style}`)
+          .join(" | "),
         artworkUrl: values.artwork.trim() || undefined,
+        designPreviewUrl: draft ? await blobToDataUrl(draft.blob) : undefined,
+        designFileName: draft?.state.logoFileName,
+        logoDataUrl: draft?.state.logoDataUrl,
       });
       setCode(created.code);
       setStatus("success");
@@ -115,10 +248,9 @@ export function RequestPage() {
       name: "",
       phone: "",
       service: initialService as ServiceSlug | "",
-      quantity: "1",
-      details: "",
       artwork: "",
     });
+    setPieces([getDefaultPiece(draftProduct, initialService, lang, draft?.state.styleId, draft?.state.printPlacement)]);
     setErrors({});
     setCode("");
     setStatus("idle");
@@ -296,6 +428,7 @@ export function RequestPage() {
                     ) : null}
                   </div>
 
+                  {!draft ? (
                   <div>
                     <label htmlFor="request-service" className="mb-2 block text-sm font-medium text-bone/85">
                       {t.request.fields.service}
@@ -306,7 +439,11 @@ export function RequestPage() {
                         name="service"
                         className="field appearance-none pe-10"
                         value={values.service}
-                        onChange={(event) => update("service", event.target.value)}
+                        onChange={(event) => {
+                          const service = event.target.value as ServiceSlug;
+                          update("service", service);
+                          setPieces([getDefaultPiece(null, service, lang)]);
+                        }}
                         aria-invalid={Boolean(errors.service)}
                         aria-describedby={errors.service ? "request-service-error" : undefined}
                         disabled={busy}
@@ -332,65 +469,152 @@ export function RequestPage() {
                       </p>
                     ) : null}
                   </div>
+                  ) : (
+                    <div className="rounded-[var(--radius-field)] border border-sand/20 bg-sand/5 p-4 text-sm text-sand">
+                      {t.request.fields.studioProductNote}
+                    </div>
+                  )}
 
-                  <div>
-                    <label htmlFor="request-quantity" className="mb-2 block text-sm font-medium text-bone/85">
-                      {t.request.fields.quantity}
-                    </label>
-                    <input
-                      id="request-quantity"
-                      name="quantity"
-                      type="number"
-                      inputMode="numeric"
-                      min={1}
-                      max={500}
-                      step={1}
-                      dir="ltr"
-                      className="field text-start"
-                      value={values.quantity}
-                      onChange={(event) => update("quantity", event.target.value)}
-                      aria-invalid={Boolean(errors.quantity)}
-                      aria-describedby={
-                        errors.quantity
-                          ? "request-quantity-error"
-                          : "request-quantity-hint"
-                      }
-                      disabled={busy}
-                    />
-                    {errors.quantity ? (
-                      <p id="request-quantity-error" className="mt-1.5 text-xs text-danger">
-                        {errors.quantity}
-                      </p>
-                    ) : (
-                      <p id="request-quantity-hint" className="mt-1.5 text-xs text-bone/45">
-                        {t.request.fields.quantityHint}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label htmlFor="request-details" className="mb-2 block text-sm font-medium text-bone/85">
-                      {t.request.fields.details}
-                    </label>
-                    <textarea
-                      id="request-details"
-                      name="details"
-                      rows={5}
-                      maxLength={1200}
-                      className="field resize-y"
-                      placeholder={t.request.fields.detailsPlaceholder}
-                      value={values.details}
-                      onChange={(event) => update("details", event.target.value)}
-                      aria-invalid={Boolean(errors.details)}
-                      aria-describedby={errors.details ? "request-details-error" : undefined}
-                      disabled={busy}
-                    />
-                    {errors.details ? (
-                      <p id="request-details-error" className="mt-1.5 text-xs text-danger">
-                        {errors.details}
-                      </p>
+                  <section className="sm:col-span-2" aria-labelledby="request-pieces-title">
+                    <div className="flex flex-wrap items-end justify-between gap-3">
+                      <div>
+                        <h3 id="request-pieces-title" className="text-sm font-semibold text-bone">
+                          {t.request.fields.piecesTitle}
+                        </h3>
+                        <p className="mt-1 text-xs text-bone/50">
+                          {pieces.length} / 500 {t.request.fields.pieceLabel}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={addPiece}
+                        disabled={busy || pieces.length >= 500}
+                        className={cn(buttonClass("secondary"), "min-h-[40px] px-4 py-2 text-xs")}
+                      >
+                        {t.request.fields.addPiece}
+                      </button>
+                    </div>
+                    {errors.pieces ? (
+                      <p className="mt-2 text-xs text-danger">{errors.pieces}</p>
                     ) : null}
-                  </div>
+                    <div className="mt-4 space-y-4">
+                      {pieces.map((piece, index) => {
+                        const product = draftProduct;
+                        const sizes = product?.options?.sizes ?? ["XS", "S", "M", "L", "XL", "2XL", "3XL"];
+                        const colors = product?.colors ?? [];
+                        return (
+                          <article
+                            key={`${index}-${piece.productId}`}
+                            className="rounded-[var(--radius-field)] border border-bone/15 bg-forest-950/45 p-4"
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <h4 className="text-sm font-semibold text-sand">
+                                {t.request.fields.pieceLabel} {index + 1}
+                              </h4>
+                              {pieces.length > 1 ? (
+                                <button
+                                  type="button"
+                                  onClick={() => removePiece(index)}
+                                  disabled={busy}
+                                  className="min-h-[40px] px-3 text-xs font-medium text-bone/60 transition-colors hover:text-danger"
+                                >
+                                  {t.request.fields.removePiece}
+                                </button>
+                              ) : null}
+                            </div>
+                            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                              <div>
+                                <label className="mb-2 block text-xs font-medium text-bone/75">
+                                  {t.request.fields.product}
+                                </label>
+                                <input className="field" value={piece.productName} readOnly disabled={busy} />
+                              </div>
+                              <div>
+                                <label htmlFor={`request-piece-${index}-size`} className="mb-2 block text-xs font-medium text-bone/75">
+                                  {t.request.fields.size}
+                                </label>
+                                <select
+                                  id={`request-piece-${index}-size`}
+                                  className="field"
+                                  value={piece.size}
+                                  onChange={(event) => updatePiece(index, "size", event.target.value)}
+                                  disabled={busy}
+                                >
+                                  <option value="" disabled>{t.request.fields.sizePlaceholder}</option>
+                                  {sizes.map((size) => <option key={size} value={size} className="text-forest-950">{size}</option>)}
+                                </select>
+                              </div>
+                              <div>
+                                <label htmlFor={`request-piece-${index}-color`} className="mb-2 block text-xs font-medium text-bone/75">
+                                  {t.request.fields.color}
+                                </label>
+                                {colors.length ? (
+                                  <select
+                                    id={`request-piece-${index}-color`}
+                                    className="field"
+                                    value={piece.color}
+                                    onChange={(event) => updatePiece(index, "color", event.target.value)}
+                                    disabled={busy}
+                                  >
+                                    {colors.map((color) => <option key={color.id} value={color.name} className="text-forest-950">{color.name}</option>)}
+                                  </select>
+                                ) : (
+                                  <input className="field" value={piece.color} onChange={(event) => updatePiece(index, "color", event.target.value)} disabled={busy} />
+                                )}
+                              </div>
+                              <div>
+                                <label htmlFor={`request-piece-${index}-style`} className="mb-2 block text-xs font-medium text-bone/75">
+                                  {t.request.fields.style}
+                                </label>
+                                <input
+                                  id={`request-piece-${index}-style`}
+                                  className="field"
+                                  maxLength={120}
+                                  placeholder={t.request.fields.stylePlaceholder}
+                                  value={piece.style}
+                                  onChange={(event) => updatePiece(index, "style", event.target.value)}
+                                  disabled={busy}
+                                />
+                              </div>
+                              <div className="sm:col-span-2">
+                                <label htmlFor={`request-piece-${index}-placement`} className="mb-2 block text-xs font-medium text-bone/75">
+                                  {lang === "ar" ? "موضع الطباعة" : "Print placement"}
+                                </label>
+                                <select
+                                  id={`request-piece-${index}-placement`}
+                                  className="field"
+                                  value={availablePlacements.includes(piece.printPlacement ?? "front") ? piece.printPlacement : availablePlacements[0]}
+                                  onChange={(event) => updatePiece(index, "printPlacement", event.target.value)}
+                                  disabled={busy}
+                                >
+                                  {(placementProfiles[piece.productId]?.placements ?? availablePlacements).map((placement) => (
+                                    <option key={placement} value={placement} className="text-forest-950">
+                                      {placementLabel(placement, lang)}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="sm:col-span-2">
+                                <label htmlFor={`request-piece-${index}-special`} className="mb-2 block text-xs font-medium text-bone/75">
+                                  {t.request.fields.specialRequest}
+                                </label>
+                                <textarea
+                                  id={`request-piece-${index}-special`}
+                                  rows={3}
+                                  maxLength={500}
+                                  className="field resize-y"
+                                  placeholder={t.request.fields.specialRequestPlaceholder}
+                                  value={piece.specialRequest}
+                                  onChange={(event) => updatePiece(index, "specialRequest", event.target.value)}
+                                  disabled={busy}
+                                />
+                              </div>
+                            </div>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  </section>
 
                   <div className="sm:col-span-2">
                     <label htmlFor="request-artwork" className="mb-2 block text-sm font-medium text-bone/85">

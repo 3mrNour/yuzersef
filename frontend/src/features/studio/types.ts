@@ -30,6 +30,7 @@ export interface Product {
   options?: {
     sizes?: string[];
     printPositions?: string[];
+    styles?: string[];
   };
 }
 
@@ -44,7 +45,10 @@ export interface DesignState {
   productId: string;
   colorId: string;
   viewId: string;
+  styleId?: string;
   logoFileName?: string;
+  logoDataUrl?: string;
+  printPlacement?: "front" | "back" | "left-sleeve" | "right-sleeve" | "custom";
   transform: DesignTransform;
   previewUrl?: string;
 }

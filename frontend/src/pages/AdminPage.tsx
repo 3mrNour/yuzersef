@@ -1,0 +1,871 @@
+import {
+  ArrowClockwise,
+  ArrowUpRight,
+  CheckCircle,
+  CircleNotch,
+  DownloadSimple,
+  EnvelopeSimple,
+  FileImage,
+  Key,
+  LockKey,
+  PhoneCall,
+  SignOut,
+  Sparkle,
+  UserList,
+  WarningCircle,
+} from "@phosphor-icons/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ApiError,
+  fetchAdminContacts,
+  fetchAdminRequests,
+  fetchAdminSummary,
+  fetchAdminPrintSettings,
+  updateAdminItemPlacement,
+  updateAdminRequestStatus,
+  updateAdminPrintSettings,
+  type AdminContact,
+  type AdminRequest,
+  type AdminSummary,
+  type PrintPlacement,
+  type RequestStatus,
+  type PrintPlacementSettings,
+  type PrintPlacementProfile,
+} from "../lib/api";
+import type { ServiceSlug } from "../content";
+import { cn } from "../lib/cn";
+import { buttonClass } from "../lib/styles";
+import { useLanguage } from "../providers/LanguageProvider";
+
+const KEY_STORAGE = "yuzersef.adminKey";
+const statuses: RequestStatus[] = ["received", "review", "confirmed", "closed"];
+const serviceNames: Record<ServiceSlug, { ar: string; en: string }> = {
+  clothing: { ar: "ملابس", en: "Clothing" },
+  mugs: { ar: "مجات", en: "Mugs" },
+  caps: { ar: "كابات", en: "Caps" },
+  stickers: { ar: "ستيكرز", en: "Stickers" },
+  cases: { ar: "جرابات", en: "Phone cases" },
+};
+const placementOptions: Array<{ value: PrintPlacement; label: { ar: string; en: string } }> = [
+  { value: "front", label: { ar: "الأمام", en: "Front" } },
+  { value: "back", label: { ar: "الخلف", en: "Back" } },
+  { value: "left-sleeve", label: { ar: "الكم الأيسر", en: "Left sleeve" } },
+  { value: "right-sleeve", label: { ar: "الكم الأيمن", en: "Right sleeve" } },
+  { value: "custom", label: { ar: "موضع مخصص", en: "Custom placement" } },
+];
+
+function statusLabel(status: RequestStatus, lang: "ar" | "en"): string {
+  const labels = {
+    received: { ar: "وصل جديد", en: "Received" },
+    review: { ar: "قيد المراجعة", en: "Under review" },
+    confirmed: { ar: "تم التأكيد", en: "Confirmed" },
+    closed: { ar: "مغلق", en: "Closed" },
+  };
+  return labels[status][lang];
+}
+
+function placementLabel(value: PrintPlacement | undefined, lang: "ar" | "en"): string {
+  const match = placementOptions.find((option) => option.value === value) ?? placementOptions[0];
+  return match.label[lang];
+}
+
+function dateLabel(value: string | null, lang: "ar" | "en"): string {
+  if (!value) return lang === "ar" ? "لا يوجد" : "None yet";
+  return new Intl.DateTimeFormat(lang === "ar" ? "ar-EG" : "en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function getStatusClasses(status: RequestStatus): string {
+  switch (status) {
+    case "received":
+      return "border-[#f5c47b]/30 bg-[#f5c47b]/10 text-[#f9d9a7]";
+    case "review":
+      return "border-[#8cc7ff]/30 bg-[#8cc7ff]/10 text-[#bfe0ff]";
+    case "confirmed":
+      return "border-[#8de5b3]/30 bg-[#8de5b3]/10 text-[#b7f1cf]";
+    case "closed":
+      return "border-[#d5d8df]/30 bg-[#d5d8df]/10 text-[#edf0f6]";
+    default:
+      return "border-bone/20 bg-bone/5 text-bone";
+  }
+}
+
+export function AdminPage() {
+  const { lang } = useLanguage();
+  const ar = lang === "ar";
+  const [key, setKey] = useState(() => sessionStorage.getItem(KEY_STORAGE) ?? "");
+  const [keyInput, setKeyInput] = useState("");
+  const [summary, setSummary] = useState<AdminSummary | null>(null);
+  const [requests, setRequests] = useState<AdminRequest[]>([]);
+  const [contacts, setContacts] = useState<AdminContact[]>([]);
+  const [requestPage, setRequestPage] = useState(1);
+  const [contactPage, setContactPage] = useState(1);
+  const [requestPages, setRequestPages] = useState(1);
+  const [contactPages, setContactPages] = useState(1);
+  const [requestFilter, setRequestFilter] = useState<RequestStatus | "all">("all");
+  const [section, setSection] = useState<"requests" | "contacts" | "settings">("requests");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [updatingId, setUpdatingId] = useState("");
+  const [selectedRequestId, setSelectedRequestId] = useState("");
+
+  const copy = useMemo(
+    () =>
+      ar
+        ? {
+            title: "لوحة الإدارة",
+            subtitle: "مراجعة الطلبات ورسائل العملاء والإشراف على التنفيذ بوضوح كامل.",
+            keyTitle: "تسجيل دخول الإدارة",
+            keyHint: "استخدم مفتاح الإدارة للوصول إلى لوحة التشغيل.",
+            keyPlaceholder: "مفتاح الإدارة",
+            enter: "دخول آمن",
+            logout: "تسجيل الخروج",
+            requests: "الطلبات",
+            contacts: "الرسائل",
+            all: "الكل",
+            refresh: "تحديث",
+            totalRequests: "إجمالي الطلبات",
+            totalContacts: "رسائل التواصل",
+            latestRequest: "آخر طلب",
+            latestContact: "آخر رسالة",
+            pieces: "قطعة",
+            phone: "واتساب",
+            special: "طلب خاص",
+            noItems: "لا توجد بيانات حتى الآن.",
+            previous: "السابق",
+            next: "التالي",
+            unauthorized: "المفتاح غير صحيح أو انتهت الجلسة.",
+            genericError: "حصلت مشكلة أثناء تحميل البيانات.",
+            status: "الحالة",
+            design: "التصميم",
+            preview: "معاينة",
+            details: "تفاصيل الطلب",
+            customer: "العميل",
+            itemDetails: "تفاصيل القطع",
+            placement: "موضع الطباعة",
+            download: "تحميل التصميم",
+            updateStatus: "تحديث الحالة",
+            notes: "ملاحظات العميل",
+            noDesign: "لا توجد صورة تصميم مرفقة.",
+            noSelection: "اختر طلبًا من القائمة لعرض التفاصيل.",
+            settings: "إعدادات الطباعة",
+            settingsIntro: "حدد مواضع الطباعة المتاحة لكل نوع منتج قبل استقبال الطلبات.",
+            saveSettings: "حفظ الإعدادات",
+            settingsSaved: "تم حفظ إعدادات مواضع الطباعة.",
+          }
+        : {
+            title: "Operations dashboard",
+            subtitle: "Track incoming requests, customer messages, and production decisions clearly.",
+            keyTitle: "Admin access",
+            keyHint: "Use your admin access key to continue.",
+            keyPlaceholder: "Admin access key",
+            enter: "Secure sign in",
+            logout: "Sign out",
+            requests: "Requests",
+            contacts: "Messages",
+            all: "All",
+            refresh: "Refresh",
+            totalRequests: "Total requests",
+            totalContacts: "Contact messages",
+            latestRequest: "Latest request",
+            latestContact: "Latest message",
+            pieces: "pieces",
+            phone: "WhatsApp",
+            special: "Special request",
+            noItems: "No records yet.",
+            previous: "Previous",
+            next: "Next",
+            unauthorized: "The key is invalid or the session expired.",
+            genericError: "Something went wrong while loading the dashboard.",
+            status: "Status",
+            design: "Design",
+            preview: "Preview",
+            details: "Request details",
+            customer: "Customer",
+            itemDetails: "Item details",
+            placement: "Print placement",
+            download: "Download design",
+            updateStatus: "Update status",
+            notes: "Customer notes",
+            noDesign: "No uploaded design available.",
+            noSelection: "Select a request from the list to view details.",
+            settings: "Print settings",
+            settingsIntro: "Choose which print positions customers can select for each product type.",
+            saveSettings: "Save settings",
+            settingsSaved: "Print position settings saved.",
+          },
+    [ar],
+  );
+  const [printSettings, setPrintSettings] = useState<PrintPlacementSettings | null>(null);
+  const [printProfiles, setPrintProfiles] = useState<Record<string, PrintPlacementProfile>>({});
+  const [settingsSaving, setSettingsSaving] = useState(false);
+
+  const selectedRequest = useMemo(
+    () => requests.find((request) => request.id === selectedRequestId) ?? requests[0] ?? null,
+    [requests, selectedRequestId],
+  );
+
+  const load = useCallback(async () => {
+    if (!key) return;
+    setLoading(true);
+    setMessage("");
+    try {
+      const [nextSummary, nextRequests, nextContacts, nextPrintSettings] = await Promise.all([
+        fetchAdminSummary(key),
+        fetchAdminRequests(key, requestPage, requestFilter),
+        fetchAdminContacts(key, contactPage),
+        fetchAdminPrintSettings(key),
+      ]);
+      setSummary(nextSummary);
+      setRequests(nextRequests.items);
+      setRequestPages(Math.max(1, nextRequests.pages));
+      setContacts(nextContacts.items);
+      setContactPages(Math.max(1, nextContacts.pages));
+      setPrintSettings(nextPrintSettings.placements);
+      setPrintProfiles(nextPrintSettings.profiles);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        sessionStorage.removeItem(KEY_STORAGE);
+        setKey("");
+        setMessage(copy.unauthorized);
+      } else {
+        setMessage(copy.genericError);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [contactPage, copy, key, requestFilter, requestPage]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  useEffect(() => {
+    if (requests.length === 0) {
+      setSelectedRequestId("");
+      return;
+    }
+    if (!selectedRequestId || !requests.some((request) => request.id === selectedRequestId)) {
+      setSelectedRequestId(requests[0].id);
+    }
+  }, [requests, selectedRequestId]);
+
+  function signIn(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const nextKey = keyInput.trim();
+    if (!nextKey) return;
+    sessionStorage.setItem(KEY_STORAGE, nextKey);
+    setKey(nextKey);
+    setKeyInput("");
+  }
+
+  function signOut() {
+    sessionStorage.removeItem(KEY_STORAGE);
+    setKey("");
+    setSummary(null);
+    setRequests([]);
+    setContacts([]);
+    setSelectedRequestId("");
+  }
+
+  async function changeStatus(request: AdminRequest, status: RequestStatus) {
+    if (status === request.status) return;
+    setUpdatingId(request.id);
+    try {
+      await updateAdminRequestStatus(key, request.id, status);
+      await load();
+    } catch {
+      setMessage(copy.genericError);
+    } finally {
+      setUpdatingId("");
+    }
+  }
+
+  async function changePlacement(requestId: string, itemIndex: number, placement: PrintPlacement) {
+    try {
+      await updateAdminItemPlacement(key, requestId, itemIndex, placement);
+      await load();
+    } catch {
+      setMessage(copy.genericError);
+    }
+  }
+
+  function togglePrintPlacement(productId: string, placement: PrintPlacement) {
+    setPrintProfiles((current) => {
+      const profile = current[productId];
+      if (!profile) return current;
+      const placements = profile.placements.includes(placement)
+        ? profile.placements.filter((value) => value !== placement)
+        : [...profile.placements, placement];
+      return placements.length ? { ...current, [productId]: { ...profile, placements } } : current;
+    });
+  }
+
+  async function savePrintSettings() {
+    if (!printSettings) return;
+    setSettingsSaving(true);
+    try {
+      const result = await updateAdminPrintSettings(key, printSettings, printProfiles);
+      setPrintSettings(result.placements);
+      setPrintProfiles(result.profiles);
+      setMessage(copy.settingsSaved);
+    } catch {
+      setMessage(copy.genericError);
+    } finally {
+      setSettingsSaving(false);
+    }
+  }
+
+  if (!key) {
+    return (
+      <main className="min-h-screen bg-[#0d1722] px-5 py-12 text-[#f8f2eb]" dir={ar ? "rtl" : "ltr"}>
+        <div className="mx-auto grid max-w-5xl gap-6 pt-10 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="rounded-[32px] border border-[#f0d9b2]/20 bg-[radial-gradient(circle_at_top_left,_rgba(224,181,97,0.12),_transparent_35%),linear-gradient(135deg,#101b28,#182836)] p-6 sm:p-8">
+            <div className="mb-8 inline-flex items-center gap-3 rounded-full border border-[#f0d9b2]/20 bg-[#f0d9b2]/5 px-3 py-2 text-xs uppercase tracking-[0.2em] text-[#f0d9b2]">
+              <Sparkle size={16} /> Yuzersef
+            </div>
+            <h1 className="text-3xl font-semibold text-[#f8f2eb] md:text-5xl">{copy.keyTitle}</h1>
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-[#dfe8ef]/75">{copy.keyHint}</p>
+            <div className="mt-8 space-y-3 text-sm text-[#dfe8ef]/70">
+              <div className="flex items-center gap-3"><CheckCircle size={18} className="text-[#f0d9b2]" /> {ar ? "إدارة الطلبات" : "Request operations"}</div>
+              <div className="flex items-center gap-3"><CheckCircle size={18} className="text-[#f0d9b2]" /> {ar ? "تحديث حالات التنفيذ" : "Status workflows"}</div>
+              <div className="flex items-center gap-3"><CheckCircle size={18} className="text-[#f0d9b2]" /> {ar ? "مراجعة ملفات التصميم" : "Design review"}</div>
+            </div>
+          </div>
+
+          <form onSubmit={signIn} className="rounded-[32px] border border-[#f0d9b2]/15 bg-[#152130] p-6 shadow-[0_24px_80px_rgba(2,6,12,0.44)] sm:p-8">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="rounded-full bg-[#f0d9b2]/10 p-2 text-[#f0d9b2]">
+                <LockKey size={24} />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-[#c8d4df]">Secure access</p>
+                <h2 className="mt-1 text-2xl text-[#f8f2eb]">{copy.keyTitle}</h2>
+              </div>
+            </div>
+
+            <label htmlFor="admin-key" className="mb-2 block text-sm font-medium text-[#edf1f5]">{copy.keyPlaceholder}</label>
+            <div className="relative">
+              <Key aria-hidden="true" size={18} className="pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 text-[#b7c7d7]" />
+              <input
+                id="admin-key"
+                type="password"
+                autoComplete="current-password"
+                className="field ps-11"
+                placeholder={copy.keyPlaceholder}
+                value={keyInput}
+                onChange={(event) => setKeyInput(event.target.value)}
+              />
+            </div>
+            {message ? <p role="alert" className="mt-3 text-sm text-[#ffb0a1]">{message}</p> : null}
+            <button type="submit" className={cn(buttonClass("primary"), "mt-6 w-full")}>
+              <LockKey size={18} /> {copy.enter}
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-forest-950 px-4 py-6 text-bone sm:px-6 lg:px-8" dir={ar ? "rtl" : "ltr"}>
+      <div className="mx-auto max-w-[1500px]">
+        <header className="rounded-[28px] border border-[#f0d9b2]/10 bg-[#101d2b]/80 p-5 shadow-[0_20px_60px_rgba(2,6,12,0.35)] sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="font-latin text-xs uppercase tracking-[0.2em] text-[#f0d9b2]">Yuzersef / Admin</p>
+              <h1 className="mt-2 text-3xl font-semibold md:text-4xl">{copy.title}</h1>
+              <p className="mt-2 text-sm text-[#dfe8ef]/70">{copy.subtitle}</p>
+            </div>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => void load()} className={cn(buttonClass("secondary"), "px-4")} disabled={loading}>
+                <ArrowClockwise size={18} className={loading ? "animate-spin" : undefined} /> {copy.refresh}
+              </button>
+              <button type="button" onClick={signOut} className={cn(buttonClass("secondary"), "px-4")}>
+                <SignOut size={18} /> {copy.logout}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {message ? (
+          <div role="alert" className="mt-5 flex items-center gap-2 rounded-[var(--radius-field)] border border-[#ffb0a1]/30 bg-[#ffb0a1]/10 p-4 text-sm text-[#fbe8e0]">
+            <WarningCircle size={18} className="text-[#ffb0a1]" /> {message}
+          </div>
+        ) : null}
+
+        <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {[
+            { label: copy.totalRequests, value: summary?.totalRequests ?? 0, icon: UserList },
+            { label: copy.totalContacts, value: summary?.totalContacts ?? 0, icon: EnvelopeSimple },
+            { label: copy.latestRequest, value: summary?.latestRequestCode ?? "—", icon: CheckCircle },
+            { label: copy.latestContact, value: dateLabel(summary?.latestContactAt ?? null, lang), icon: PhoneCall },
+          ].map(({ label, value, icon: Icon }) => (
+            <div key={label} className="rounded-[24px] border border-[#f0d9b2]/10 bg-[#101d2b] p-5 shadow-[0_12px_30px_rgba(2,6,12,0.25)]">
+              <div className="flex items-center justify-between gap-2">
+                <Icon size={22} className="text-[#f0d9b2]" />
+                <span className="rounded-full border border-[#f0d9b2]/10 bg-[#f0d9b2]/5 px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-[#dfe8ef]/60">Live</span>
+              </div>
+              <p className="mt-5 text-xs uppercase tracking-[0.18em] text-[#dfe8ef]/60">{label}</p>
+              <p className="mt-2 text-2xl font-semibold text-[#f8f2eb]">{value}</p>
+            </div>
+          ))}
+        </section>
+
+        <section className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {statuses.map((status) => (
+            <button
+              type="button"
+              key={status}
+              onClick={() => {
+                setSection("requests");
+                setRequestFilter(status);
+                setRequestPage(1);
+              }}
+              className={cn(
+                "rounded-[22px] border p-4 text-start transition-all duration-200",
+                requestFilter === status && section === "requests"
+                  ? "border-[#f0d9b2]/45 bg-[#f0d9b2]/10 shadow-[0_12px_30px_rgba(240,217,178,0.12)]"
+                  : "border-[#f0d9b2]/10 bg-[#101d2b] hover:border-[#f0d9b2]/30",
+              )}
+            >
+              <p className="text-xs uppercase tracking-[0.16em] text-[#dfe8ef]/60">{statusLabel(status, lang)}</p>
+              <p className="mt-3 text-3xl font-semibold text-[#f8f2eb]">{summary?.statuses[status] ?? 0}</p>
+            </button>
+          ))}
+        </section>
+
+        <div className="mt-8 flex flex-wrap items-center gap-2 border-b border-bone/10 pb-3">
+          <button type="button" onClick={() => setSection("requests")} className={cn(buttonClass(section === "requests" ? "primary" : "secondary"), "px-5")}>
+            <UserList size={18} /> {copy.requests}
+          </button>
+          <button type="button" onClick={() => setSection("contacts")} className={cn(buttonClass(section === "contacts" ? "primary" : "secondary"), "px-5")}>
+            <EnvelopeSimple size={18} /> {copy.contacts}
+          </button>
+          <button type="button" onClick={() => setSection("settings")} className={cn(buttonClass(section === "settings" ? "primary" : "secondary"), "px-5")}>
+            <Sparkle size={18} /> {copy.settings}
+          </button>
+          {section === "requests" ? (
+            <select
+              value={requestFilter}
+              onChange={(event) => {
+                setRequestFilter(event.target.value as RequestStatus | "all");
+                setRequestPage(1);
+              }}
+              className="field ms-auto min-h-[44px] w-auto min-w-[170px] py-2"
+              aria-label={copy.status}
+            >
+              <option value="all">{copy.all}</option>
+              {statuses.map((status) => <option key={status} value={status}>{statusLabel(status, lang)}</option>)}
+            </select>
+          ) : null}
+        </div>
+
+        {section === "settings" ? (
+          <PrintSettingsPanel
+            settings={printSettings}
+            profiles={printProfiles}
+            copy={copy}
+            lang={lang}
+            saving={settingsSaving}
+            onToggle={togglePrintPlacement}
+            onSave={() => void savePrintSettings()}
+          />
+        ) : null}
+
+        {section !== "settings" ? <div className="mt-6 grid gap-6 xl:grid-cols-[1.45fr_0.95fr]">
+          <div>
+            {loading && !summary ? (
+              <div className="flex items-center justify-center gap-3 py-20 text-sm text-[#dfe8ef]/65"><CircleNotch size={20} className="animate-spin text-[#f0d9b2]" /> {copy.refresh}</div>
+            ) : section === "requests" ? (
+              <RequestTable
+                requests={requests}
+                lang={lang}
+                copy={copy}
+                selectedRequestId={selectedRequestId}
+                updatingId={updatingId}
+                onSelect={setSelectedRequestId}
+                onStatusChange={changeStatus}
+              />
+            ) : (
+              <ContactTable contacts={contacts} lang={lang} copy={copy} />
+            )}
+          </div>
+
+          <RequestDetailPanel
+            request={selectedRequest}
+            keyValue={key}
+            lang={lang}
+            copy={copy}
+            onStatusChange={changeStatus}
+            onPlacementChange={changePlacement}
+          />
+        </div> : null}
+
+        {section !== "settings" ? <Pagination page={section === "requests" ? requestPage : contactPage} pages={section === "requests" ? requestPages : contactPages} previous={copy.previous} next={copy.next} onChange={section === "requests" ? setRequestPage : setContactPage} /> : null}
+      </div>
+    </main>
+  );
+}
+
+function RequestTable({
+  requests,
+  lang,
+  copy,
+  selectedRequestId,
+  updatingId,
+  onSelect,
+  onStatusChange,
+}: {
+  requests: AdminRequest[];
+  lang: "ar" | "en";
+  copy: Record<string, string>;
+  selectedRequestId: string;
+  updatingId: string;
+  onSelect: (id: string) => void;
+  onStatusChange: (request: AdminRequest, status: RequestStatus) => void;
+}) {
+  return (
+    <div className="grid gap-4">
+      {requests.length ? requests.map((request) => (
+        <article
+          key={request.id}
+          className={cn(
+            "rounded-[26px] border p-5 transition-all duration-200",
+            selectedRequestId === request.id
+              ? "border-[#f0d9b2]/35 bg-[#101d2b] shadow-[0_16px_40px_rgba(240,217,178,0.08)]"
+              : "border-[#f0d9b2]/10 bg-[#101d2b]/80 hover:border-[#f0d9b2]/25",
+          )}
+        >
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <button type="button" onClick={() => onSelect(request.id)} className="flex-1 text-start">
+              <div className="flex items-center gap-3">
+                <p dir="ltr" className="font-latin text-xl tracking-wide text-[#f0d9b2]">{request.code}</p>
+                <span className={cn("inline-flex rounded-full border px-2 py-1 text-[10px] uppercase tracking-[0.18em]", getStatusClasses(request.status))}>
+                  {statusLabel(request.status, lang)}
+                </span>
+              </div>
+              <p className="mt-2 text-sm text-[#f8f2eb]">{request.name}</p>
+              <p className="mt-1 text-xs text-[#dfe8ef]/60">{dateLabel(request.createdAt, lang)} · {request.quantity} {copy.pieces}</p>
+            </button>
+            <select
+              value={request.status}
+              onChange={(event) => onStatusChange(request, event.target.value as RequestStatus)}
+              disabled={updatingId === request.id}
+              className="field min-h-[42px] w-auto min-w-[150px] py-2"
+              aria-label={copy.status}
+            >
+              {statuses.map((status) => <option key={status} value={status}>{statusLabel(status, lang)}</option>)}
+            </select>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-[#dfe8ef]/70">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f0d9b2]/10 bg-[#f0d9b2]/5 px-2.5 py-1.5">
+              <PhoneCall size={12} className="text-[#f0d9b2]" />
+              {request.phone}
+            </span>
+            {request.items?.length ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f0d9b2]/10 bg-[#f0d9b2]/5 px-2.5 py-1.5">
+                <UserList size={12} className="text-[#f0d9b2]" />
+                {request.items.length} {copy.pieces}
+              </span>
+            ) : null}
+          </div>
+
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            {request.items?.length ? request.items.slice(0, 3).map((item, index) => (
+              <div key={`${request.id}-${index}`} className="rounded-[18px] border border-[#f0d9b2]/10 bg-[#0d1722] p-3 text-xs text-[#dfe8ef]/75">
+                <p className="font-medium text-[#f8f2eb]">{item.productName}</p>
+                <p className="mt-1">{item.size} · {item.color} · {item.style}</p>
+                {item.specialRequest ? <p className="mt-2 line-clamp-2 text-[#f0d9b2]">{item.specialRequest}</p> : null}
+              </div>
+            )) : (
+              <div className="rounded-[18px] border border-dashed border-[#f0d9b2]/15 bg-[#0d1722] p-3 text-xs text-[#dfe8ef]/65">
+                {request.details || copy.noItems}
+              </div>
+            )}
+          </div>
+        </article>
+      )) : <EmptyState text={copy.noItems} />}
+    </div>
+  );
+}
+
+function PrintSettingsPanel({
+  settings,
+  profiles,
+  copy,
+  lang,
+  saving,
+  onToggle,
+  onSave,
+}: {
+  settings: PrintPlacementSettings | null;
+  profiles: Record<string, PrintPlacementProfile>;
+  copy: Record<string, string>;
+  lang: "ar" | "en";
+  saving: boolean;
+  onToggle: (productId: string, placement: PrintPlacement) => void;
+  onSave: () => void;
+}) {
+  return (
+    <section className="mt-6 rounded-[var(--radius-card)] border border-bone/15 bg-forest-900/55 p-5 sm:p-7">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-bone/10 pb-5">
+        <div>
+          <h2 className="text-2xl text-bone">{copy.settings}</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-bone/60">{copy.settingsIntro}</p>
+        </div>
+        <button type="button" onClick={onSave} disabled={!settings || saving} className={cn(buttonClass("primary"), "px-5")}>
+          {saving ? <CircleNotch size={18} className="animate-spin" /> : <CheckCircle size={18} />}
+          {copy.saveSettings}
+        </button>
+      </div>
+      {settings ? (
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          {Object.values(profiles).map((profile) => (
+            <div key={profile.productId} className="rounded-[var(--radius-field)] border border-bone/10 bg-forest-950/45 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-medium text-bone">{profile.productName}</h3>
+                  <p className="mt-1 text-xs text-bone/50">{serviceNames[profile.service][lang]}</p>
+                </div>
+                <span className="rounded-full border border-sand/25 bg-sand/10 px-2 py-1 text-[10px] text-sand">
+                  {profile.placements.length} {lang === "ar" ? "مواضع متاحة" : "positions"}
+                </span>
+              </div>
+              <p className="mt-3 text-xs leading-relaxed text-bone/60">{profile.guidance}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {placementOptions.map((option) => {
+                  const enabled = profile.placements.includes(option.value);
+                  return (
+                    <button
+                      type="button"
+                      key={option.value}
+                      onClick={() => onToggle(profile.productId, option.value)}
+                      aria-pressed={enabled}
+                      className={cn(
+                        "rounded-full border px-3 py-2 text-xs transition-colors",
+                        enabled
+                          ? "border-sand/60 bg-sand/15 text-sand"
+                          : "border-bone/15 bg-bone/5 text-bone/50 hover:border-bone/30 hover:text-bone",
+                      )}
+                    >
+                      {option.label[lang]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="py-12 text-center text-sm text-bone/60">{copy.refresh}</div>
+      )}
+    </section>
+  );
+}
+
+function RequestDetailPanel({
+  request,
+  keyValue,
+  lang,
+  copy,
+  onStatusChange,
+  onPlacementChange,
+}: {
+  request: AdminRequest | null;
+  keyValue: string;
+  lang: "ar" | "en";
+  copy: Record<string, string>;
+  onStatusChange: (request: AdminRequest, status: RequestStatus) => void;
+  onPlacementChange: (requestId: string, itemIndex: number, placement: PrintPlacement) => void;
+}) {
+  if (!request) {
+    return (
+      <aside className="rounded-[28px] border border-[#f0d9b2]/10 bg-[#101d2b] p-6 text-sm text-[#dfe8ef]/65">
+        {copy.noSelection}
+      </aside>
+    );
+  }
+
+  const designUrl = request.designPreviewUrl || request.artworkUrl;
+  const logoUrl = request.logoDataUrl;
+
+  return (
+    <aside className="rounded-[28px] border border-[#f0d9b2]/10 bg-[#101d2b] p-5 shadow-[0_16px_40px_rgba(2,6,12,0.28)] sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f0d9b2]/10 pb-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.18em] text-[#dfe8ef]/50">{copy.details}</p>
+          <p dir="ltr" className="mt-2 font-latin text-2xl text-[#f0d9b2]">{request.code}</p>
+        </div>
+        <select
+          value={request.status}
+          onChange={(event) => onStatusChange(request, event.target.value as RequestStatus)}
+          className="field min-h-[42px] w-auto min-w-[170px] py-2"
+          aria-label={copy.updateStatus}
+        >
+          {statuses.map((status) => <option key={status} value={status}>{statusLabel(status, lang)}</option>)}
+        </select>
+      </div>
+
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <div className="rounded-[20px] border border-[#f0d9b2]/10 bg-[#0d1722] p-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-[#dfe8ef]/55">{copy.customer}</p>
+          <p className="mt-3 text-lg font-medium text-[#f8f2eb]">{request.name}</p>
+          <a href={`https://wa.me/2${request.phone}`} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 text-sm text-[#f0d9b2]">
+            <PhoneCall size={16} /> {request.phone}
+          </a>
+        </div>
+        <div className="rounded-[20px] border border-[#f0d9b2]/10 bg-[#0d1722] p-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-[#dfe8ef]/55">{copy.preview}</p>
+          <p className="mt-3 text-lg font-medium text-[#f8f2eb]">{request.quantity} {copy.pieces}</p>
+          <p className="mt-2 text-sm text-[#dfe8ef]/70">{dateLabel(request.createdAt, lang)}</p>
+        </div>
+      </div>
+
+      {designUrl ? (
+        <div className="mt-5 rounded-[24px] border border-[#f0d9b2]/10 bg-[#0d1722] p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <span className="inline-flex items-center gap-2 text-sm text-[#f0d9b2]">
+              <FileImage size={18} /> {copy.design}
+            </span>
+            <a
+              href={designUrl}
+              target="_blank"
+              rel="noreferrer"
+              download={request.designFileName ?? `${request.code}.png`}
+              className="inline-flex items-center gap-2 rounded-full border border-[#f0d9b2]/20 bg-[#f0d9b2]/5 px-3 py-1.5 text-xs text-[#f8f2eb]"
+            >
+              <DownloadSimple size={14} /> {copy.download}
+            </a>
+          </div>
+          <img src={designUrl} alt={copy.design} className="max-h-[260px] w-full rounded-[18px] border border-[#f0d9b2]/10 bg-[#0a141d] object-contain" />
+        </div>
+      ) : (
+        <div className="mt-5 rounded-[24px] border border-dashed border-[#f0d9b2]/15 bg-[#0d1722] p-6 text-sm text-[#dfe8ef]/60">
+          {copy.noDesign}
+        </div>
+      )}
+
+      {logoUrl ? (
+        <div className="mt-5 rounded-[24px] border border-sand/20 bg-forest-950/55 p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <span className="inline-flex items-center gap-2 text-sm text-sand">
+              <FileImage size={18} /> {lang === "ar" ? "اللوجو الأصلي" : "Original uploaded logo"}
+            </span>
+            <a
+              href={logoUrl}
+              target="_blank"
+              rel="noreferrer"
+              download={request.designFileName ?? `${request.code}-logo.png`}
+              className="inline-flex items-center gap-2 rounded-full border border-sand/30 bg-sand/10 px-3 py-1.5 text-xs text-bone"
+            >
+              <DownloadSimple size={14} /> {copy.download}
+            </a>
+          </div>
+          <img src={logoUrl} alt={lang === "ar" ? "اللوجو الأصلي" : "Original uploaded logo"} className="max-h-[180px] w-full rounded-[18px] border border-bone/10 bg-white object-contain p-3" />
+          <p className="mt-2 text-xs text-bone/55">{request.designFileName ?? "Uploaded logo"}</p>
+        </div>
+      ) : null}
+
+      {request.items?.length ? (
+        <div className="mt-5">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <p className="text-sm font-medium text-[#f8f2eb]">{copy.itemDetails}</p>
+            <span className="text-xs uppercase tracking-[0.18em] text-[#dfe8ef]/50">{request.items.length}</span>
+          </div>
+          <div className="space-y-3">
+            {request.items.map((item, index) => (
+              <div key={`${request.id}-${index}`} className="rounded-[20px] border border-[#f0d9b2]/10 bg-[#0d1722] p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-[#f8f2eb]">{item.productName}</p>
+                    <p className="mt-1 text-xs text-[#dfe8ef]/65">{item.size} · {item.color} · {item.style}</p>
+                  </div>
+                  <span className="rounded-full border border-[#f0d9b2]/15 bg-[#f0d9b2]/5 px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-[#f0d9b2]">
+                    {placementLabel(item.printPlacement, lang)}
+                  </span>
+                </div>
+
+                <div className="mt-3">
+                  <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-[#dfe8ef]/55">{copy.placement}</label>
+                  <select
+                    value={item.printPlacement ?? "front"}
+                    onChange={(event) => onPlacementChange(request.id, index, event.target.value as PrintPlacement)}
+                    className="field min-h-[42px] w-full py-2"
+                  >
+                    {placementOptions.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label[lang]}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {item.specialRequest ? (
+                  <p className="mt-3 rounded-[14px] border border-[#f0d9b2]/10 bg-[#f0d9b2]/5 p-2 text-xs leading-relaxed text-[#f8f2eb]">
+                    {item.specialRequest}
+                  </p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {request.details ? (
+        <div className="mt-5 rounded-[20px] border border-[#f0d9b2]/10 bg-[#0d1722] p-4">
+          <p className="text-sm font-medium text-[#f8f2eb]">{copy.notes}</p>
+          <p className="mt-2 text-sm leading-relaxed text-[#dfe8ef]/75">{request.details}</p>
+        </div>
+      ) : null}
+
+      <div className="mt-5 flex flex-wrap items-center gap-2 pt-4 text-xs text-[#dfe8ef]/55">
+        <span className="inline-flex items-center gap-2 rounded-full border border-[#f0d9b2]/10 bg-[#f0d9b2]/5 px-2.5 py-1.5">
+          <ArrowUpRight size={12} className="text-[#f0d9b2]" />
+          {request.service}
+        </span>
+        {keyValue ? (
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#f0d9b2]/10 bg-[#f0d9b2]/5 px-2.5 py-1.5">
+            <LockKey size={12} className="text-[#f0d9b2]" />
+        {lang === "ar" ? "مفتاح نشط" : "Active key"}
+          </span>
+        ) : null}
+      </div>
+    </aside>
+  );
+}
+
+function ContactTable({ contacts, lang, copy }: { contacts: AdminContact[]; lang: "ar" | "en"; copy: Record<string, string> }) {
+  return (
+    <div className="mt-5 grid gap-4">
+      {contacts.length ? contacts.map((contact) => (
+        <article key={contact.id} className="rounded-[24px] border border-[#f0d9b2]/10 bg-[#101d2b] p-5">
+          <div className="flex flex-wrap justify-between gap-3">
+            <div>
+              <p className="font-medium text-[#f8f2eb]">{contact.name}</p>
+              <a href={`https://wa.me/2${contact.phone}`} target="_blank" rel="noreferrer" className="mt-1 inline-block text-sm text-[#f0d9b2] underline underline-offset-2">{copy.phone}: {contact.phone}</a>
+            </div>
+            <time className="text-xs text-[#dfe8ef]/60">{dateLabel(contact.createdAt, lang)}</time>
+          </div>
+          <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-[#dfe8ef]/75">{contact.message}</p>
+        </article>
+      )) : <EmptyState text={copy.noItems} />}
+    </div>
+  );
+}
+
+function EmptyState({ text }: { text: string }) {
+  return <div className="rounded-[24px] border border-dashed border-[#f0d9b2]/15 bg-[#101d2b] py-16 text-center text-sm text-[#dfe8ef]/55">{text}</div>;
+}
+
+function Pagination({ page, pages, previous, next, onChange }: { page: number; pages: number; previous: string; next: string; onChange: (page: number) => void }) {
+  if (pages <= 1) return null;
+  return (
+    <div className="flex items-center justify-center gap-3 py-8">
+      <button type="button" disabled={page <= 1} onClick={() => onChange(page - 1)} className={cn(buttonClass("secondary"), "px-4 text-xs")}>{previous}</button>
+      <span className="font-latin text-sm text-[#dfe8ef]/65">{page} / {pages}</span>
+      <button type="button" disabled={page >= pages} onClick={() => onChange(page + 1)} className={cn(buttonClass("secondary"), "px-4 text-xs")}>{next}</button>
+    </div>
+  );
+}

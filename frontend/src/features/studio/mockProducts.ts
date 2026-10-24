@@ -32,6 +32,7 @@ export const mockProducts: Product[] = [
     options: {
       sizes: ["S", "M", "L", "XL", "2XL"],
       printPositions: ["Front", "Back"],
+      styles: ["Classic", "Oversized"],
     },
   },
   {
@@ -53,6 +54,7 @@ export const mockProducts: Product[] = [
         wrap: "cylinder",
       },
     ],
+    options: { styles: ["Classic", "Matte", "Glossy"] },
   },
   {
     _id: "cap-classic",
@@ -73,5 +75,6 @@ export const mockProducts: Product[] = [
         wrap: "none",
       },
     ],
+    options: { styles: ["Classic", "Dad cap", "Snapback"] },
   },
 ];

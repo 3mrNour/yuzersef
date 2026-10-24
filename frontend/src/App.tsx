@@ -9,6 +9,7 @@ import { StudioPage } from "./pages/StudioPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { AdminPage } from "./pages/AdminPage";
 
 const DevPrintAreaPage = lazy(async () => {
   const module = await import("./pages/DevPrintAreaPage");
@@ -20,6 +21,7 @@ export function App() {
     <BrowserRouter>
       <DesignDraftProvider>
         <Routes>
+          <Route path="admin" element={<AdminPage />} />
           <Route element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="request" element={<RequestPage />} />
