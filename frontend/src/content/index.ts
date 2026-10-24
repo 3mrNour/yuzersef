@@ -317,15 +317,9 @@ const sharedServices = {
 
 const sharedPortfolio = [
   { id: "tee-halftone", category: "clothing", image: "/mock/tshirt.jpg" },
-  { id: "hoodie-arches", category: "clothing", image: "/mock/tshirt.jpg" },
   { id: "mug-wave", category: "mugs", image: "/mock/mug.jpg" },
-  { id: "mug-sun", category: "mugs", image: "/mock/mug.jpg" },
   { id: "cap-dots", category: "caps", image: "/mock/ccap.jpg" },
-  { id: "cap-stripes", category: "caps", image: "/mock/ccap.jpg" },
-  { id: "sticker-sheet", category: "stickers", image: "/mock/tote-bag.jpg" },
-  { id: "sticker-badge", category: "stickers", image: "/mock/tote-bag.jpg" },
   { id: "case-grid", category: "cases", image: "/mock/tote-bag.jpg" },
-  { id: "case-arc", category: "cases", image: "/mock/tote-bag.jpg" },
 ] as const;
 
 export const contact = {
@@ -475,15 +469,9 @@ export const copy: Record<Lang, SiteCopy> = {
       ],
       items: [
         { ...sharedPortfolio[0], title: "تيشيرت هاف تون", alt: "نموذج تيشيرت بنقشة نقاط" },
-        { ...sharedPortfolio[1], title: "هودي بخطوط", alt: "نموذج هودي بنقشة أقواس" },
-        { ...sharedPortfolio[2], title: "مج بموج", alt: "نموذج مج بنقشة موج" },
-        { ...sharedPortfolio[3], title: "مج شمس", alt: "نموذج مج بنقشة شمس" },
-        { ...sharedPortfolio[4], title: "كاب نقاط", alt: "نموذج كاب بنقشة نقاط" },
-        { ...sharedPortfolio[5], title: "كاب خطوط", alt: "نموذج كاب بخطوط" },
-        { ...sharedPortfolio[6], title: "ورقة ستيكرز", alt: "نموذج ورقة ستيكرز" },
-        { ...sharedPortfolio[7], title: "ستيكر دايرة", alt: "نموذج ستيكر دايري" },
-        { ...sharedPortfolio[8], title: "جراب شبكة", alt: "نموذج جراب بشبكة" },
-        { ...sharedPortfolio[9], title: "جراب قوس", alt: "نموذج جراب بأقواس" },
+        { ...sharedPortfolio[1], title: "مج بموج", alt: "نموذج مج بنقشة موج" },
+        { ...sharedPortfolio[2], title: "كاب نقاط", alt: "نموذج كاب بنقشة نقاط" },
+        { ...sharedPortfolio[3], title: "شنطة", alt: "نموذج شنطة مطبوعة" },
       ],
     },
     about: {
@@ -851,15 +839,9 @@ export const copy: Record<Lang, SiteCopy> = {
       ],
       items: [
         { ...sharedPortfolio[0], title: "Halftone tee", alt: "Demo t-shirt with a halftone print" },
-        { ...sharedPortfolio[1], title: "Arched hoodie", alt: "Demo hoodie with an arch print" },
-        { ...sharedPortfolio[2], title: "Wave mug", alt: "Demo mug with a wave print" },
-        { ...sharedPortfolio[3], title: "Sun mug", alt: "Demo mug with a sun print" },
-        { ...sharedPortfolio[4], title: "Dot cap", alt: "Demo cap with a dot print" },
-        { ...sharedPortfolio[5], title: "Striped cap", alt: "Demo cap with stripes" },
-        { ...sharedPortfolio[6], title: "Sticker sheet", alt: "Demo sticker sheet" },
-        { ...sharedPortfolio[7], title: "Round sticker", alt: "Demo round sticker" },
-        { ...sharedPortfolio[8], title: "Grid case", alt: "Demo phone case with a grid print" },
-        { ...sharedPortfolio[9], title: "Arc case", alt: "Demo phone case with arc lines" },
+        { ...sharedPortfolio[1], title: "Wave mug", alt: "Demo mug with a wave print" },
+        { ...sharedPortfolio[2], title: "Dot cap", alt: "Demo cap with a dot print" },
+        { ...sharedPortfolio[3], title: "Tote bag", alt: "Demo tote bag with a printed design" },
       ],
     },
     about: {

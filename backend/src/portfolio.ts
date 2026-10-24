@@ -1,16 +1,18 @@
 import type { PortfolioItem } from "./models/PortfolioItem.js";
 
 export const defaultPortfolioItems: PortfolioItem[] = [
-  ["tee-halftone", "clothing", "تيشيرت هاف تون", "Halftone tee", "نموذج تيشيرت بنقشة نقاط", "Demo t-shirt with a halftone print", "/mock/tshirt.jpg"],
-  ["hoodie-arches", "clothing", "هودي بخطوط", "Arched hoodie", "نموذج هودي بنقشة أقواس", "Demo hoodie with an arch print", "/mock/tshirt.jpg"],
-  ["mug-wave", "mugs", "مج بموج", "Wave mug", "نموذج مج بنقشة موج", "Demo mug with a wave print", "/mock/mug.jpg"],
-  ["mug-sun", "mugs", "مج شمس", "Sun mug", "نموذج مج بنقشة شمس", "Demo mug with a sun print", "/mock/mug.jpg"],
-  ["cap-dots", "caps", "كاب نقاط", "Dot cap", "نموذج كاب بنقطة", "Demo cap with a dot print", "/mock/ccap.jpg"],
-  ["cap-stripes", "caps", "كاب خطوط", "Striped cap", "نموذج كاب بخطوط", "Demo cap with stripes", "/mock/ccap.jpg"],
-  ["sticker-sheet", "stickers", "ورقة ستيكرز", "Sticker sheet", "نموذج ورقة ستيكرز", "Demo sticker sheet", "/mock/tote-bag.jpg"],
-  ["sticker-badge", "stickers", "ستيكر دايرة", "Round sticker", "نموذج ستيكر دائري", "Demo round sticker", "/mock/tote-bag.jpg"],
-  ["case-grid", "cases", "جراب شبكة", "Grid case", "نموذج جراب بشبكة", "Demo phone case with a grid print", "/mock/tote-bag.jpg"],
-  ["case-arc", "cases", "جراب قوس", "Arc case", "نموذج جراب بأقواس", "Demo phone case with arc lines", "/mock/tote-bag.jpg"],
+  ["tee-halftone", "clothing", "تيشيرت", "T-shirt", "تيشيرت مطبوع", "Printed t-shirt", "/mock/tshirt.jpg"],
+  ["mug-wave", "mugs", "مج", "Mug", "مج مطبوع", "Printed mug", "/mock/mug.jpg"],
+  ["cap-dots", "caps", "كاب", "Cap", "كاب مطبوع", "Printed cap", "/mock/ccap.jpg"],
+  ["case-grid", "cases", "شنطة", "Tote bag", "شنطة مطبوعة", "Printed tote bag", "/mock/tote-bag.jpg"],
 ].map(([id, category, titleAr, titleEn, altAr, altEn, image], sortOrder) => ({
-  id, category: category as PortfolioItem["category"], titleAr, titleEn, altAr, altEn, image, sortOrder, active: true,
+  id,
+  category: category as PortfolioItem["category"],
+  titleAr,
+  titleEn,
+  altAr,
+  altEn,
+  image,
+  sortOrder,
+  active: true,
 }));
