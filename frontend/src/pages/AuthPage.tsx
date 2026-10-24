@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { PageHeader } from "../components/PageHeader";
 import { useAuth } from "../providers/AuthProvider";
-import { forgotPassword, resetPassword, verifyEmail } from "../lib/api";
+import { ApiError, forgotPassword, resetPassword, verifyEmail } from "../lib/api";
 
 export function AuthPage() {
   const { signIn, signUp } = useAuth();
@@ -40,8 +40,16 @@ export function AuthPage() {
         await signIn(email, password);
         navigate("/account");
       }
-    } catch {
-      setMessage("We could not complete that action. Check your details and try again.");
+    } catch (error) {
+      if (error instanceof ApiError && error.code === "authentication_email_delivery_failed") {
+        setMessage("We could not send the verification email. Check your Resend sender and recipient settings.");
+      } else if (error instanceof ApiError && error.code === "authentication_email_not_configured") {
+        setMessage("Email delivery is not configured on the server yet.");
+      } else if (error instanceof ApiError && error.code === "email_already_registered") {
+        setMessage("An account with this email already exists. Try signing in.");
+      } else {
+        setMessage("We could not complete that action. Check your details and try again.");
+      }
     }
   }
 

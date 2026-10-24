@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { authenticate, clearSessionCookie, createAuthToken, createUser, hashPassword, hashToken, requireUser, setSessionCookie, verifyPassword } from "../auth.js";
-import { isAuthEmailConfigured, sendAuthEmail } from "../email.js";
+import { AuthEmailError, isAuthEmailConfigured, sendAuthEmail } from "../email.js";
 import { AuthTokenModel } from "../models/AuthToken.js";
 import { UserModel } from "../models/User.js";
 
@@ -33,6 +33,10 @@ authRouter.post("/signup", async (req, res) => {
   } catch (error) {
     await AuthTokenModel.deleteMany({ userId: user.id }).exec();
     await UserModel.deleteOne({ id: user.id }).exec();
+    if (error instanceof AuthEmailError) {
+      res.status(502).json({ error: "authentication_email_delivery_failed" });
+      return;
+    }
     throw error;
   }
   res.status(201).json({ user: publicUser(user), message: "verification_email_sent" });

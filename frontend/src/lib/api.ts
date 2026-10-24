@@ -96,11 +96,13 @@ const API_BASE = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
 
 export class ApiError extends Error {
   status: number;
+  code: string;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, code = message) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -120,7 +122,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   if (!response.ok) {
-    throw new ApiError(`request_failed_${response.status}`, response.status);
+    let code = `request_failed_${response.status}`;
+    try {
+      const body = await response.json() as { error?: string };
+      code = body.error ?? code;
+    } catch {
+      // Keep the HTTP status when the server does not return JSON.
+    }
+    throw new ApiError(code, response.status, code);
   }
 
   return (await response.json()) as T;
