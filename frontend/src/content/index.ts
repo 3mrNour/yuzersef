@@ -317,15 +317,15 @@ const sharedServices = {
 
 const sharedPortfolio = [
   { id: "tee-halftone", category: "clothing", image: "/mock/tshirt.jpg" },
-  { id: "hoodie-arches", category: "clothing", image: "/mock/tee-front.svg" },
+  { id: "hoodie-arches", category: "clothing", image: "/mock/tshirt.jpg" },
   { id: "mug-wave", category: "mugs", image: "/mock/mug.jpg" },
-  { id: "mug-sun", category: "mugs", image: "/mock/mug-side.svg" },
+  { id: "mug-sun", category: "mugs", image: "/mock/mug.jpg" },
   { id: "cap-dots", category: "caps", image: "/mock/ccap.jpg" },
-  { id: "cap-stripes", category: "caps", image: "/mock/cap-front.svg" },
-  { id: "sticker-sheet", category: "stickers", image: "/mock/studio-preview.svg" },
-  { id: "sticker-badge", category: "stickers", image: "/mock/studio-preview.svg" },
+  { id: "cap-stripes", category: "caps", image: "/mock/ccap.jpg" },
+  { id: "sticker-sheet", category: "stickers", image: "/mock/tote-bag.jpg" },
+  { id: "sticker-badge", category: "stickers", image: "/mock/tote-bag.jpg" },
   { id: "case-grid", category: "cases", image: "/mock/tote-bag.jpg" },
-  { id: "case-arc", category: "cases", image: "/mock/tee-back.svg" },
+  { id: "case-arc", category: "cases", image: "/mock/tote-bag.jpg" },
 ] as const;
 
 export const contact = {

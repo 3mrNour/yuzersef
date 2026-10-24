@@ -22,7 +22,7 @@ portfolioRouter.get("/", async (_req, res) => {
   await PortfolioItemModel.bulkWrite(
     defaultPortfolioItems.map((item) => ({
       updateOne: {
-        filter: { id: item.id, image: { $regex: /^\/portfolio\// } },
+        filter: { id: item.id, image: { $regex: /(\.svg$|^\/portfolio\/)/ } },
         update: { $set: { image: item.image } },
       },
     })),
