@@ -18,9 +18,11 @@ export function Process() {
           <ProcessFlow />
         </Reveal>
 
-        <p className="mt-8 flex items-start gap-2 border-t border-bone/10 pt-5 text-xs leading-relaxed text-bone/50">
-          <Info aria-hidden="true" size={15} className="mt-0.5 shrink-0" />
-          <span>{t.process.note}</span>
+        <p className="mt-8 flex items-start gap-3 rounded-2xl border border-sand/15 bg-sand/[0.06] px-4 py-3.5 text-xs leading-relaxed text-bone/60 sm:mt-10 sm:px-5">
+          <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-sand/15 text-sand">
+            <Info aria-hidden="true" size={15} />
+          </span>
+          <span className="pt-0.5">{t.process.note}</span>
         </p>
       </div>
     </section>
