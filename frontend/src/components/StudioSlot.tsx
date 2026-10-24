@@ -1,6 +1,10 @@
 import { CircleNotch, WarningCircle } from "@phosphor-icons/react";
+import { Canvas } from "@react-three/fiber";
+import { ContactShadows, OrbitControls, useGLTF } from "@react-three/drei";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import * as THREE from "three";
 import { listProducts } from "../features/studio/studioApi";
 import { useDesignDraft } from "../features/studio/DesignDraft";
 import type { DesignState, Product } from "../features/studio/types";
@@ -16,6 +20,8 @@ const MockupStudio = lazy(async () => {
   const module = await import("../features/studio/MockupStudio");
   return { default: module.MockupStudio };
 });
+
+const MODEL_URL = "/models/shirt_baked.glb";
 
 interface StudioSlotProps {
   className?: string;
@@ -41,14 +47,42 @@ function StudioPreview({ className, note }: { className?: string; note?: string 
       )}
     >
       <div className="relative">
-        <img
-          src="/mock/tshirt.jpg"
-          alt={t.studioUi.previewAlt}
-          width={2000}
-          height={1333}
-          loading="lazy"
-          className="aspect-[4/5] w-full bg-bone object-contain"
-        />
+        <div
+          role="img"
+          aria-label={t.studioUi.previewAlt}
+          className="aspect-[4/5] w-full bg-[radial-gradient(120%_120%_at_50%_10%,#0a4038_0%,#032b26_55%,#022421_100%)]"
+        >
+          <Canvas
+            dpr={[1, 2]}
+            camera={{ position: [0, 0.35, 3.2], fov: 32 }}
+            gl={{ antialias: true, alpha: false }}
+          >
+            <color attach="background" args={["#033A34"]} />
+            <ambientLight intensity={0.85} />
+            <directionalLight position={[2.6, 3.2, 2.4]} intensity={1.7} />
+            <directionalLight position={[-2.6, 1.6, -2.2]} intensity={0.7} />
+            <PreviewShirt />
+            <ContactShadows
+              position={[0, -0.92, 0]}
+              opacity={0.5}
+              scale={4.5}
+              blur={2.4}
+              far={1.6}
+              resolution={256}
+              color="#04211d"
+            />
+            <OrbitControls
+              makeDefault
+              enablePan={false}
+              enableZoom={false}
+              enableDamping
+              dampingFactor={0.08}
+              autoRotate
+              autoRotateSpeed={1.2}
+              target={[0, 0.02, 0]}
+            />
+          </Canvas>
+        </div>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-forest-950/85 via-forest-950/35 to-transparent px-5 pb-5 pt-16">
           <span className="block max-w-[30ch] text-xs leading-relaxed text-bone/85">
@@ -63,6 +97,35 @@ function StudioPreview({ className, note }: { className?: string; note?: string 
       </figcaption>
     </figure>
   );
+}
+
+function PreviewShirt() {
+  const { scene } = useGLTF(MODEL_URL);
+  const model = useMemo(() => {
+    const clone = scene.clone(true);
+    const bounds = new THREE.Box3().setFromObject(clone);
+    const size = bounds.getSize(new THREE.Vector3());
+    const center = bounds.getCenter(new THREE.Vector3());
+    const scale = 1.7 / Math.max(size.y, 0.001);
+
+    clone.scale.setScalar(scale);
+    clone.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+    clone.traverse((object) => {
+      if (!(object as THREE.Mesh).isMesh) return;
+      const mesh = object as THREE.Mesh;
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      mesh.material = materials.map((material) => {
+        const copy = material.clone();
+        if ("color" in copy && copy.color instanceof THREE.Color) {
+          copy.color.set("#EAC08C");
+        }
+        return copy;
+      });
+    });
+    return clone;
+  }, [scene]);
+
+  return <primitive object={model} />;
 }
 
 function StudioWorkspace({ className }: { className?: string }) {
